@@ -1,0 +1,36 @@
+databases:
+  - name: cs-wachemo-db
+    databaseName: cs_wachemo
+    user: postgres
+    plan: free
+    region: frankfurt
+
+services:
+  # ─── FastAPI Backend ──────────────────────────────────────────
+  - type: web
+    name: cs-wachemo-backend
+    env: python
+    region: frankfurt
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_NAME
+        value: CS Wachemo University API
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cs-wachemo-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: ADMIN_EMAIL
+        value: neba@gmail.com
+      - key: ADMIN_PASSWORD
+        value: CS3RD
+      - key: ADMIN_FULL_NAME
+        value: Nebiyu Mathewos
+      - key: GEMINI_API_KEY
+        sync: false

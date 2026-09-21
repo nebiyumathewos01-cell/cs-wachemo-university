@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env.local
+
+# Environment variables (keep .env.example, ignore actual .env)
+.env
+
+# Uploads (user-generated content)
+uploads/
+
+# Alembic
+# Keep versions/ tracked, but ignore compiled pyc inside
+alembic/__pycache__/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log

@@ -1,0 +1,33 @@
+# Environments and secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+uploads/*
+!uploads/.gitkeep
+
+# System & IDE
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+.gemini/

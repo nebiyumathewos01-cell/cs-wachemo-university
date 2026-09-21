@@ -1,0 +1,10 @@
+Alembic migration versions for CS Wachemo University.
+
+To create a new migration after changing models:
+    alembic revision --autogenerate -m "describe your change"
+
+To apply all pending migrations:
+    alembic upgrade head
+
+To rollback one step:
+    alembic downgrade -1

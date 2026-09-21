@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # ─── PostgreSQL Database ─────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    container_name: cs_wachemo_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Neba1234}
+      POSTGRES_DB: ${POSTGRES_DB:-cs_wachemo}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── FastAPI Backend ──────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cs_wachemo_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - APP_NAME=CS Wachemo University API
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-Neba1234}@db:5432/${POSTGRES_DB:-cs_wachemo}
+      - SECRET_KEY=${SECRET_KEY:-super_secret_jwt_key_cs_wachemo_2026_nebiyu_mathewos}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost,http://localhost:5173,http://localhost:80}
+      - ADMIN_EMAIL=neba@gmail.com
+      - ADMIN_PASSWORD=CS3RD
+      - ADMIN_FULL_NAME=Nebiyu Mathewos
+    volumes:
+      - backend_uploads:/app/uploads
+    ports:
+      - "8000:8000"
+
+  # ─── React Frontend ───────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
+    container_name: cs_wachemo_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+  backend_uploads:

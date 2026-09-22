@@ -106,10 +106,6 @@ export default function LoginPage() {
             </span>
           </h1>
 
-          <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-            Official learning and assessment portal for Wachemo University Computer Science students. Access lecture slides, AI chapter quizzes, and verified past university exams.
-          </p>
-
           {/* Feature Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {[

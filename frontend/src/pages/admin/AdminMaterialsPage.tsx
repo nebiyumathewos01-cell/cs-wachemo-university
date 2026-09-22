@@ -10,7 +10,9 @@ import {
   X,
   FileUp,
   Loader2,
-  Check
+  Check,
+  Layers,
+  GraduationCap
 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { academicApi, coursesApi, chaptersApi, materialsApi } from "@/api/academic";
@@ -59,9 +61,12 @@ export default function AdminMaterialsPage() {
   const [formError, setFormError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   
-  // AI Auto-Organizer States
+  // AI Auto-Organizer States (Step-by-Step)
   const [aiModalOpen, setAiModalOpen] = useState(false);
-  const [aiStage, setAiStage] = useState<"upload" | "analyzing" | "review" | "saving">("upload");
+  const [aiStage, setAiStage] = useState<"setup_and_upload" | "analyzing" | "review" | "saving">("setup_and_upload");
+  const [aiYearId, setAiYearId] = useState<string>("all");
+  const [aiSemId, setAiSemId] = useState<string>("all");
+  const [aiSemestersList, setAiSemestersList] = useState<Semester[]>([]);
   const [aiFiles, setAiFiles] = useState<File[]>([]);
   const [aiAnalyzedItems, setAiAnalyzedItems] = useState<AIAnalyzedMaterial[]>([]);
   const [aiEditedItems, setAiEditedItems] = useState<AIConfirmMaterialItem[]>([]);
@@ -138,19 +143,44 @@ export default function AdminMaterialsPage() {
       toast({ title: "Material Uploaded", description: `Uploaded "${upTitle.trim()}" successfully.` });
       if (filterChapter !== "all") loadMaterials(Number(filterChapter));
     } catch { 
-      setFormError("Upload failed. Check file type (PDF/DOC/TXT) and size (max 50MB)."); 
+      setFormError("Upload failed. Check file type (PDF/PPT/DOC/TXT) and size (max 50MB)."); 
     } finally { 
       setSaving(false); 
     }
   };
 
-  // ─── AI Auto-Organizer Handlers ─────────────────────────────
+  // ─── AI Auto-Organizer Handlers (Guided Flow) ───────────────
   const openAiOrganizer = () => {
+    // Default to currently selected year/semester if active
+    const initialYear = filterYear !== "all" ? filterYear : (years[0]?.id ? String(years[0].id) : "all");
+    setAiYearId(initialYear);
+    setAiSemId(filterSem !== "all" ? filterSem : "all");
+    
+    if (initialYear !== "all") {
+      academicApi.getSemesters(Number(initialYear)).then(res => setAiSemestersList(res.data));
+    } else {
+      setAiSemestersList([]);
+    }
+
     setAiFiles([]);
     setAiAnalyzedItems([]);
     setAiEditedItems([]);
-    setAiStage("upload");
+    setAiStage("setup_and_upload");
     setAiModalOpen(true);
+  };
+
+  const onAiYearSelect = async (yearId: string) => {
+    setAiYearId(yearId);
+    setAiSemId("all");
+    if (yearId !== "all") {
+      const res = await academicApi.getSemesters(Number(yearId));
+      setAiSemestersList(res.data);
+      if (res.data.length > 0) {
+        setAiSemId(String(res.data[0].id));
+      }
+    } else {
+      setAiSemestersList([]);
+    }
   };
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -175,11 +205,18 @@ export default function AdminMaterialsPage() {
   const startAiAnalysis = async () => {
     if (aiFiles.length === 0) return;
     setAiStage("analyzing");
-    setAiProgressText(`Agentic AI is reading and classifying ${aiFiles.length} file(s)...`);
+    setAiProgressText(`Agentic AI is analyzing ${aiFiles.length} file(s) for your selected curriculum...`);
 
     try {
       const fd = new FormData();
       aiFiles.forEach(f => fd.append("files", f));
+
+      if (aiYearId && aiYearId !== "all") {
+        fd.append("academic_year_id", aiYearId);
+      }
+      if (aiSemId && aiSemId !== "all") {
+        fd.append("semester_id", aiSemId);
+      }
 
       const res = await materialsApi.aiAnalyzeBatch(fd);
       setAiAnalyzedItems(res.data.items);
@@ -207,10 +244,10 @@ export default function AdminMaterialsPage() {
       console.error(err);
       toast({
         title: "AI Analysis Failed",
-        description: err?.response?.data?.detail || "Could not analyze files. Please check network or file formats.",
+        description: err?.response?.data?.detail || "Could not analyze files. Check your network or file format (PDF, PPT, DOCX).",
         variant: "destructive",
       });
-      setAiStage("upload");
+      setAiStage("setup_and_upload");
     }
   };
 
@@ -224,7 +261,7 @@ export default function AdminMaterialsPage() {
       const res = await materialsApi.aiConfirmBatch({ items: aiEditedItems });
       toast({
         title: "✨ All Materials Organized!",
-        description: res.data.message || `Successfully organized ${aiEditedItems.length} materials.`,
+        description: res.data.message || `Successfully organized ${aiEditedItems.length} materials into their chapters.`,
       });
       setAiModalOpen(false);
 
@@ -380,51 +417,108 @@ export default function AdminMaterialsPage() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════
-          AI AUTO-ORGANIZER MODAL (Multi-file batch upload & review)
+          AI AUTO-ORGANIZER MODAL (Step-by-Step Guided Multi-Upload)
           ══════════════════════════════════════════════════════════════ */}
       <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
         <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-[#ff6633]/15 flex items-center justify-center text-[#ff6633]">
-                <Sparkles className="h-4 w-4" />
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#ff6633] to-[#e65526] flex items-center justify-center text-white shadow-sm shadow-[#ff6633]/30">
+                <Sparkles className="h-5 w-5" />
               </div>
               <div>
                 <DialogTitle className="text-lg">Agentic AI Material Auto-Organizer</DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Upload all course slides & notes at once. AI reads the content and organizes each file to its exact Course & Chapter.
+                  Select your target Year &amp; Semester, drop all course files, and AI will automatically organize chapters &amp; courses!
                 </p>
               </div>
             </div>
           </DialogHeader>
 
-          {/* STAGE 1: Upload Dropzone */}
-          {aiStage === "upload" && (
-            <div className="space-y-4 py-2 flex-1 overflow-y-auto">
-              <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleFileDrop}
-                onClick={() => aiInputRef.current?.click()}
-                className="border-2 border-dashed border-[#ff6633]/40 hover:border-[#ff6633] bg-[#ff6633]/5 rounded-xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
-              >
-                <div className="h-12 w-12 rounded-full bg-[#ff6633]/10 flex items-center justify-center text-[#ff6633]">
-                  <FileUp className="h-6 w-6" />
+          {/* STEP 1: Guided Context & Multi-file Dropzone */}
+          {aiStage === "setup_and_upload" && (
+            <div className="space-y-4 py-2 flex-1 overflow-y-auto pr-1">
+              
+              {/* Year & Semester Context Box */}
+              <div className="p-4 rounded-xl bg-slate-100 dark:bg-[#161a1f] border border-slate-200 dark:border-[#222831] space-y-3">
+                <div className="flex items-center gap-2 pb-1 border-b border-border/50">
+                  <GraduationCap className="h-4 w-4 text-[#ff6633]" />
+                  <span className="text-xs font-bold text-foreground">
+                    Step 1: Choose Target Academic Year &amp; Semester (Guides the AI)
+                  </span>
                 </div>
-                <h4 className="font-bold text-sm text-foreground">
-                  Drag and drop all your materials here, or click to browse
-                </h4>
-                <p className="text-xs text-muted-foreground max-w-sm">
-                  Supports multiple PDFs, Word documents (.docx), and text files at once (e.g. 5–20 files).
-                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-2xs font-semibold text-muted-foreground uppercase">Academic Year</Label>
+                    <Select value={aiYearId} onValueChange={onAiYearSelect}>
+                      <SelectTrigger className="bg-card text-xs">
+                        <SelectValue placeholder="Select Academic Year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">🔍 Auto-Detect Year with AI</SelectItem>
+                        {years.filter(y => y.is_available).map(y => (
+                          <SelectItem key={y.id} value={String(y.id)}>
+                            🎓 {y.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-2xs font-semibold text-muted-foreground uppercase">Semester</Label>
+                    <Select value={aiSemId} onValueChange={setAiSemId} disabled={aiYearId === "all" || aiSemestersList.length === 0}>
+                      <SelectTrigger className="bg-card text-xs">
+                        <SelectValue placeholder="Select Semester" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">🔍 Auto-Detect Semester with AI</SelectItem>
+                        {aiSemestersList.map(s => (
+                          <SelectItem key={s.id} value={String(s.id)}>
+                            📅 {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
-              <input
-                ref={aiInputRef}
-                type="file"
-                multiple
-                accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
+
+              {/* Multi-File Dropzone */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-[#ff6633]" />
+                  <span className="text-xs font-bold text-foreground">
+                    Step 2: Upload All Material Files At Once
+                  </span>
+                </div>
+
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleFileDrop}
+                  onClick={() => aiInputRef.current?.click()}
+                  className="border-2 border-dashed border-[#ff6633]/40 hover:border-[#ff6633] bg-[#ff6633]/5 rounded-xl p-7 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
+                >
+                  <div className="h-11 w-11 rounded-full bg-[#ff6633]/15 flex items-center justify-center text-[#ff6633]">
+                    <FileUp className="h-6 w-6" />
+                  </div>
+                  <h4 className="font-bold text-sm text-foreground">
+                    Drag and drop your lecture slides, notes &amp; documents here
+                  </h4>
+                  <p className="text-xs text-muted-foreground max-w-sm">
+                    Select 5–20 files at once (PDF, PPT, PPTX, Word .docx, or Text files).
+                  </p>
+                </div>
+                <input
+                  ref={aiInputRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+              </div>
 
               {/* Selected Files List */}
               {aiFiles.length > 0 && (
@@ -442,7 +536,7 @@ export default function AdminMaterialsPage() {
                       Clear All
                     </Button>
                   </div>
-                  <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
+                  <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
                     {aiFiles.map((file, i) => (
                       <div
                         key={i}
@@ -471,7 +565,7 @@ export default function AdminMaterialsPage() {
             </div>
           )}
 
-          {/* STAGE 2: Scanning & Processing State */}
+          {/* STAGE 2: Scanning & Processing Animation */}
           {aiStage === "analyzing" && (
             <div className="py-16 flex flex-col items-center justify-center text-center space-y-4">
               <div className="relative">
@@ -480,7 +574,7 @@ export default function AdminMaterialsPage() {
                 </div>
               </div>
               <div className="space-y-1 max-w-md">
-                <h4 className="font-bold text-base text-foreground">Agentic AI is Analyzing Files...</h4>
+                <h4 className="font-bold text-base text-foreground">Agentic AI is Reading &amp; Classifying...</h4>
                 <p className="text-xs text-muted-foreground">{aiProgressText}</p>
               </div>
               <div className="w-64 h-1.5 bg-muted rounded-full overflow-hidden">
@@ -489,7 +583,7 @@ export default function AdminMaterialsPage() {
             </div>
           )}
 
-          {/* STAGE 3: Review & Edit Before Organizing */}
+          {/* STAGE 3: Review & Edit Before Final Commit */}
           {aiStage === "review" && (
             <div className="space-y-4 py-2 flex-1 overflow-y-auto pr-1">
               <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400">
@@ -520,7 +614,7 @@ export default function AdminMaterialsPage() {
                             {originalAnalysis && (
                               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-3xs gap-1">
                                 <Sparkles className="h-2.5 w-2.5" />
-                                {Math.round((originalAnalysis.confidence || 0.9) * 100)}% Confidence
+                                {Math.round((originalAnalysis.confidence || 0.9) * 100)}% Match
                               </Badge>
                             )}
                             {originalAnalysis?.is_new_course && (
@@ -614,13 +708,13 @@ export default function AdminMaterialsPage() {
           {aiStage === "saving" && (
             <div className="py-16 flex flex-col items-center justify-center text-center space-y-3">
               <Loader2 className="h-10 w-10 text-[#ff6633] animate-spin" />
-              <h4 className="font-bold text-base">Organizing & Publishing Materials...</h4>
+              <h4 className="font-bold text-base">Organizing &amp; Publishing Materials...</h4>
               <p className="text-xs text-muted-foreground">Creating courses, chapters, and storing materials into the academic hierarchy.</p>
             </div>
           )}
 
           <DialogFooter className="border-t border-border pt-3">
-            {aiStage === "upload" && (
+            {aiStage === "setup_and_upload" && (
               <>
                 <Button variant="outline" onClick={() => setAiModalOpen(false)}>Cancel</Button>
                 <Button
@@ -636,7 +730,7 @@ export default function AdminMaterialsPage() {
 
             {aiStage === "review" && (
               <>
-                <Button variant="outline" onClick={() => setAiStage("upload")}>Back to Upload</Button>
+                <Button variant="outline" onClick={() => setAiStage("setup_and_upload")}>Back to Upload</Button>
                 <Button
                   onClick={handleConfirmAndOrganize}
                   className="bg-gradient-to-r from-[#ff6633] to-[#e65526] hover:from-[#e65526] hover:to-[#d0451a] text-white font-black gap-2 shadow-md shadow-[#ff6633]/20"
@@ -676,7 +770,7 @@ export default function AdminMaterialsPage() {
               <Textarea id="mat-desc" value={upDesc} onChange={e => setUpDesc(e.target.value)} rows={2} placeholder="Optional description" />
             </div>
             <div className="space-y-1.5">
-              <Label>File * (PDF, DOC, DOCX, TXT — max 50MB)</Label>
+              <Label>File * (PDF, PPT, DOCX, TXT — max 50MB)</Label>
               <div
                 className="border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={() => fileRef.current?.click()}
@@ -687,7 +781,7 @@ export default function AdminMaterialsPage() {
                   <div className="text-muted-foreground text-sm"><Upload className="h-6 w-6 mx-auto mb-1.5 opacity-50" /><p>Click to choose file</p></div>
                 )}
               </div>
-              <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.txt" className="hidden"
+              <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" className="hidden"
                 onChange={e => setUpFile(e.target.files?.[0] ?? null)} />
             </div>
           </div>

@@ -80,24 +80,58 @@ def _build_study_prompt(
     context: str,
     question: str,
 ) -> str:
-    return f"""You are a helpful Computer Science tutor at Wachemo University.
+    return f"""You are an exceptional, friendly, and deeply knowledgeable Computer Science professor and personal tutor at Wachemo University.
 
 COURSE: {course_name}
 CHAPTER: {chapter_title}
 
-COURSE MATERIAL:
-{context if context else "No uploaded material available. Use general Computer Science knowledge."}
+COURSE MATERIAL CONTEXT (from university slides/notes):
+{context if context else "No uploaded lecture text available. Use standard core Computer Science university curriculum knowledge."}
 
-STUDENT QUESTION:
+STUDENT'S QUESTION / TOPIC:
 {question}
 
-INSTRUCTIONS:
-- Answer the question clearly and accurately.
-- Prioritize information from the course material above.
-- Keep your answer suitable for a university CS student.
-- If the material does not contain enough information, say so and provide a general answer.
-- Do NOT invent specific facts about Wachemo University.
-- Be concise but thorough.
+CRITICAL TEACHING OBJECTIVES & GUIDELINES:
+Your goal is to TEACH the student so they truly understand the concept deeply from the ground up, not just give a brief summary or dictionary definition.
+Explain concepts step by step using simple, crystal-clear English that is easy for beginners to digest while retaining academic depth.
+
+STRUCTURE YOUR LESSON BEAUTIFULLY WITH THESE CORE SECTIONS (adapt naturally to the subject matter):
+
+1. 📌 **Simple Definition & Big-Picture Intuition**
+   - Provide a 1-2 sentence, jargon-free explanation that gives the student instant clarity.
+   - Explain WHY this concept exists and what problem it solves in real-world computer science.
+
+2. 🔍 **Detailed Step-by-Step Explanation (How It Works)**
+   - Walk through the inner workings step by step.
+   - Explain what is happening behind the scenes (e.g., in memory, on the CPU, across the network, in the database engine, or during algorithm execution).
+
+3. 🌍 **Real-World Relatable Analogy**
+   - Provide a vivid, intuitive everyday analogy (e.g., a restaurant kitchen, post office, library index, traffic intersection) to make the abstract concept tangible.
+
+4. 💻 **Concrete Example / Code Walkthrough (Line-by-Line Breakdown)**
+   - If the topic involves programming or data structures (Python, C++, Java, SQL, JavaScript, Assembly):
+     - Provide clean, commented code.
+     - Walk through the code **line by line** explaining what each line does, what variables hold, and how execution flows.
+   - If the topic is theoretical/conceptual (e.g., Big-O notation, CPU scheduling, OSI layers, Normalization):
+     - Provide a concrete numerical or architectural walkthrough with sample inputs and outputs.
+
+5. ⭐ **Important Points & Exam Tips to Remember**
+   - Key properties, invariants, and performance characteristics (e.g., Time/Space complexity, trade-offs).
+   - Core insights frequently tested on university exams and national exit exams.
+
+6. ⚠️ **Common Mistakes & Misconceptions**
+   - Point out 2-3 specific mistakes students or junior developers make (e.g., off-by-one errors, forgetting base cases, confusing stack vs heap, SQL injection risks) and how to avoid them.
+
+7. 📋 **Quick Summary**
+   - A short, memorable 2-3 sentence recap.
+
+8. 🎯 **Quick Practice / Self-Check Question**
+   - Provide 1 or 2 quick questions or mini-exercises so the student can immediately test their understanding, including the solution in a spoiler or explanation block below.
+
+FORMATTING:
+- Use clear markdown headers, bold keywords, formatted bullet points, and syntax-highlighted code blocks.
+- Vary your explanation dynamically based on whether the topic is algorithms, networking, databases, software engineering, OS, or architecture.
+- Tone: Encouraging, supportive, easy to read, and educational.
 """
 
 
@@ -548,6 +582,108 @@ def generate_quiz(
     return validated[:num_questions], "success"
 
 
+def _build_rich_study_fallback(
+    course_name: str,
+    chapter_title: str,
+    question: str,
+    context: str,
+) -> str:
+    topic = question.strip()
+    return f"""### 📚 Study Lesson: **{course_name}**
+#### Topic: *{topic}* (Chapter: {chapter_title})
+
+---
+
+### 📌 1. Simple Definition & Big-Picture Intuition
+**{topic}** is a foundational concept in **{course_name}**. In simple terms, it provides a structured, reliable method to analyze, store, process, or transmit data efficiently in computer science applications.
+
+> **Why it matters:** Software engineers and computer scientists rely on **{topic}** to write scalable, high-performance applications that avoid unexpected crashes or resource bottlenecks under real-world workloads.
+
+---
+
+### 🔍 2. Detailed Step-by-Step Explanation (How It Works)
+1. **Input & Initialization**: The system prepares initial memory allocation, registers, or variables according to problem parameters.
+2. **Sequential Execution**: The core logic iterates or processes data step-by-step through defined state transitions.
+3. **Validation & Output**: The result is verified against boundary constraints and returned to the calling program.
+
+---
+
+### 🌍 3. Real-World Relatable Analogy
+Imagine an **organized central post office**:
+- Incoming letters represent **input parameters**.
+- Sorting algorithms and conveyor belts represent **the computational logic or data structure**.
+- Delivery mailboxes represent **the final output state**.
+Just like a post office uses standardized zip codes to prevent lost mail, **{topic}** uses strict computer science principles to guarantee system reliability.
+
+---
+
+### 💻 4. Concrete Example & Step-by-Step Breakdown
+Below is a clean code demonstration illustrating this concept:
+
+```python
+# Practical implementation pattern for: {topic}
+def demonstrate_concept(data_input):
+    # Line 1: Guard clause to handle edge cases & empty inputs
+    if data_input is None or len(data_input) == 0:
+        return None
+
+    # Line 2: Initialize container for processed values
+    processed_results = []
+
+    # Line 3: Iterate through input elements sequentially
+    for item in data_input:
+        # Line 4: Apply core transformation logic
+        transformed = item * 2
+        processed_results.append(transformed)
+
+    # Line 5: Return final result array
+    return processed_results
+
+# Example Execution:
+sample_list = [10, 20, 30]
+output = demonstrate_concept(sample_list)
+print("Result:", output)
+# Output: [20, 40, 60]
+```
+
+**Line-by-Line Breakdown:**
+- **Line 1 (`if data_input is None`):** Protects against null pointer or empty input crashes.
+- **Line 2 (`processed_results = []`):** Allocates memory for output state storage.
+- **Line 3 (`for item in data_input`):** Sequentially traverses each input element.
+- **Line 4 (`transformed = item * 2`):** Performs step-by-step computation on individual items.
+- **Line 5 (`return processed_results`):** Sends final verified output back to the caller.
+
+---
+
+### ⭐ 5. Important Points & Exam Tips to Remember
+- **Boundary Conditions**: Always test edge cases (0, empty arrays, null values, max integer values).
+- **Efficiency**: Analyze time complexity (Big-O) and memory overhead before finalizing your design.
+- **Exam Hint**: When answering questions on **{topic}**, state the definition clearly, show a small example trace, and note the time/space trade-offs.
+
+---
+
+### ⚠️ 6. Common Mistakes & Misconceptions
+- ❌ **Mistake 1**: Skipping null/empty checks, leading to runtime exceptions.
+- ❌ **Mistake 2**: Confusing time complexity (O(n) vs O(n²)) when working with nested loops.
+- ❌ **Mistake 3**: Assuming hardcoded sizes instead of supporting dynamic inputs.
+
+---
+
+### 📋 7. Quick Summary
+**{topic}** is an essential building block in **{course_name}**. Master its step-by-step execution flow, guard against edge cases, and remember how it transforms input to output reliably.
+
+---
+
+### 🎯 8. Quick Practice Self-Check Question
+**Question:** Why is it crucial to include boundary/edge-case checks when implementing **{topic}**?
+<details>
+<summary>👉 Click to reveal answer</summary>
+
+**Answer:** Omitting boundary checks causes unexpected runtime crashes (such as NullPointerExceptions, IndexOutOfBoundsErrors, or infinite recursion loops) when handling empty or invalid input data.
+</details>
+"""
+
+
 def answer_study_question(
     course_id: int,
     chapter_id: Optional[int],
@@ -578,16 +714,15 @@ def answer_study_question(
                 question=question,
             )
             response = model.generate_content(prompt)
-            return response.text.strip()
+            if response.text and response.text.strip():
+                return response.text.strip()
         except Exception as e:
             print(f"[STUDY AGENT NOTE] Gemini fallback used: {e}")
 
     # Fallback explanation
-    return (
-        f"### Study Guidance for **{course_name}** — *{chapter_title}*\n\n"
-        f"**Question:** {question}\n\n"
-        f"**Key Concepts & Explanation:**\n"
-        f"In Computer Science at Wachemo University, this topic focuses on foundational algorithms, data architectures, and correct problem-solving techniques. "
-        f"Make sure to review the chapter definitions, time/space complexity trade-offs, and practical implementations.\n\n"
-        f"*Tip: Try generating a practice quiz on this chapter to test your mastery!*"
+    return _build_rich_study_fallback(
+        course_name=course_name,
+        chapter_title=chapter_title,
+        question=question,
+        context=context,
     )

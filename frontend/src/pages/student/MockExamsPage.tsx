@@ -400,46 +400,152 @@ export default function MockExamsPage() {
           </Card>
         )}
         
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => setShowReview(v => !v)} variant="outline" className="flex-1">
-            {showReview ? "Hide" : "Review"} Answers
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <Button
+            onClick={() => setShowReview(v => !v)}
+            variant={showReview ? "default" : "outline"}
+            className="flex-1 font-semibold"
+          >
+            {showReview ? "Hide Answer Review" : "Review Answers with Explanations"}
           </Button>
-          <Button onClick={() => { setStep("setup"); setResult(null); setQuiz(null); setShowReview(false); }} className="flex-1">
+          <Button
+            onClick={() => { setStep("setup"); setResult(null); setQuiz(null); setShowReview(false); }}
+            variant="secondary"
+            className="flex-1 sm:flex-initial"
+          >
             Take Another Exam
           </Button>
         </div>
 
         {/* Answer review */}
         {showReview && (
-          <div className="space-y-3 mt-6">
-            <h2 className="text-lg font-semibold">Answer Review</h2>
-            {result.answers.map((item, idx) => {
-              const correctOpt = item.question.options?.find(o => o.is_correct);
-              const selectedOpt = item.question.options?.find(o => o.id === item.student_answer.selected_option_id);
-              return (
-                <Card key={idx} className={cn("border-l-4", item.is_correct ? "border-l-success" : "border-l-destructive")}>
-                  <CardContent className="p-4">
-                    <div className="flex gap-2 mb-3">
-                      {item.is_correct
-                        ? <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                        : <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />}
-                      <p className="text-sm font-medium leading-snug">{item.question.text}</p>
-                    </div>
-                    {!item.is_correct && selectedOpt && (
-                      <p className="text-xs text-destructive mb-1.5">Your answer: <strong>{selectedOpt.label}. {selectedOpt.text}</strong></p>
+          <div className="space-y-4 pt-2">
+            <div className="border-b border-border pb-3">
+              <h2 className="text-lg font-bold">Exam Answer Review</h2>
+              <p className="text-xs text-muted-foreground">Review your responses, correct answers, and detailed explanations for each question.</p>
+            </div>
+
+            <div className="space-y-4">
+              {result.answers.map((item, idx) => {
+                const questionOptions = item.question?.options || [];
+                const studentSelId = item.selected_option_id ?? item.student_answer?.selected_option_id ?? answers[item.question.id];
+                const isCorrect = item.is_correct;
+
+                return (
+                  <Card
+                    key={item.question.id || idx}
+                    className={cn(
+                      "overflow-hidden border-2 shadow-sm transition-all",
+                      isCorrect
+                        ? "border-emerald-500/40 bg-card"
+                        : "border-rose-500/40 bg-card"
                     )}
-                    {correctOpt && (
-                      <p className="text-xs text-success mb-2">Correct: <strong>{correctOpt.label}. {correctOpt.text}</strong></p>
-                    )}
-                    {item.question.explanation && (
-                      <div className="text-xs text-muted-foreground bg-surface border border-border rounded-lg p-2.5 mt-2">
-                        <strong className="text-foreground">Explanation: </strong>{item.question.explanation}
+                  >
+                    <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50 bg-muted/20">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-2.5">
+                          <span className={cn(
+                            "flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold text-white shrink-0 mt-0.5",
+                            isCorrect ? "bg-emerald-600" : "bg-rose-600"
+                          )}>
+                            {idx + 1}
+                          </span>
+                          <div>
+                            <p className="text-sm sm:text-base font-semibold text-foreground leading-snug">
+                              {item.question.text}
+                            </p>
+                          </div>
+                        </div>
+
+                        <Badge
+                          className={cn(
+                            "text-xs shrink-0 font-bold",
+                            isCorrect
+                              ? "bg-emerald-600 text-white"
+                              : "bg-rose-600 text-white"
+                          )}
+                        >
+                          {isCorrect ? "CORRECT" : "INCORRECT"}
+                        </Badge>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    </CardHeader>
+
+                    <CardContent className="p-4 sm:p-5 space-y-3">
+                      {/* Options List */}
+                      <div className="space-y-2">
+                        {questionOptions.map((opt) => {
+                          const isOptionCorrect = opt.is_correct || opt.id === item.correct_option_id;
+                          const isOptionSelected = opt.id === studentSelId;
+
+                          let containerClasses = "border-border bg-background text-foreground";
+                          let badgeContent = null;
+
+                          if (isOptionCorrect && isOptionSelected) {
+                            containerClasses = "border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 font-semibold shadow-xs";
+                            badgeContent = (
+                              <span className="text-2xs font-bold bg-emerald-600 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" /> Your Choice (Correct)
+                              </span>
+                            );
+                          } else if (isOptionCorrect && !isOptionSelected) {
+                            containerClasses = "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-100 font-semibold";
+                            badgeContent = (
+                              <span className="text-2xs font-bold bg-emerald-600 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" /> Correct Answer
+                              </span>
+                            );
+                          } else if (!isOptionCorrect && isOptionSelected) {
+                            containerClasses = "border-rose-500 bg-rose-50/80 dark:bg-rose-950/30 text-rose-950 dark:text-rose-100 font-semibold shadow-xs";
+                            badgeContent = (
+                              <span className="text-2xs font-bold bg-rose-600 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <XCircle className="h-3 w-3" /> Your Choice (Wrong)
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <div
+                              key={opt.id}
+                              className={cn(
+                                "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border text-xs sm:text-sm gap-2 transition-colors",
+                                containerClasses
+                              )}
+                            >
+                              <div className="flex items-start gap-2.5 min-w-0">
+                                <span className={cn(
+                                  "font-mono font-bold px-1.5 py-0.5 rounded text-xs shrink-0",
+                                  isOptionCorrect
+                                    ? "bg-emerald-600 text-white"
+                                    : isOptionSelected
+                                    ? "bg-rose-600 text-white"
+                                    : "bg-muted text-muted-foreground"
+                                )}>
+                                  {opt.label}
+                                </span>
+                                <span className="leading-snug">{opt.text}</span>
+                              </div>
+                              {badgeContent && <div className="self-end sm:self-center shrink-0">{badgeContent}</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Explanation */}
+                      {item.question.explanation && (
+                        <div className="rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800 p-3.5 sm:p-4 text-xs sm:text-sm mt-3 space-y-1">
+                          <p className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                            <span>💡 Detailed Explanation:</span>
+                          </p>
+                          <p className="text-amber-950/90 dark:text-amber-100/90 leading-relaxed">
+                            {item.question.explanation}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

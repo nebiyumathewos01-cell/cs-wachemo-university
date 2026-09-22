@@ -274,17 +274,21 @@ export interface StudentAnswer {
   is_correct: boolean | null;
 }
 
+export interface QuizAnswerReview {
+  question: Question;
+  selected_option_id?: number | null;
+  student_answer?: StudentAnswer;
+  is_correct: boolean;
+  correct_option_id?: number | null;
+}
+
 export interface QuizResult {
   attempt_id: number;
   score: number;
   total_questions: number;
   correct_answers: number;
   incorrect_answers: number;
-  answers: Array<{
-    question: Question;
-    student_answer: StudentAnswer;
-    is_correct: boolean;
-  }>;
+  answers: QuizAnswerReview[];
   weak_topics: string[];
   recommendations: string[];
 }

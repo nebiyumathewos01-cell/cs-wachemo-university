@@ -257,7 +257,7 @@ export default function DemoPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white max-w-3xl mx-auto leading-tight">
-            Master Computer Science with <span className="bg-gradient-to-r from-purple-400 to-amber-300 bg-clip-text text-transparent">AI-Powered Tools</span>
+            Computer Science Learning &amp; <span className="bg-gradient-to-r from-purple-400 to-amber-300 bg-clip-text text-transparent">Examination Platform</span>
           </h1>
 
           <p className="text-sm sm:text-base text-purple-100/80 max-w-2xl mx-auto">

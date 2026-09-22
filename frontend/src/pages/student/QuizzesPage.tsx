@@ -380,13 +380,13 @@ export default function QuizzesPage() {
       : result.answers;
 
     return (
-      <div className="max-w-2xl mx-auto pb-24 lg:pb-8 space-y-5">
+      <div className="max-w-3xl mx-auto pb-24 lg:pb-8 space-y-6">
         {/* Score hero */}
-        <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8 text-center shadow-sm">
           <Badge variant="muted" className="mb-4">{grade}</Badge>
-          <div className={cn("text-6xl font-bold tracking-tight mb-2", scoreColor)}>{pct}%</div>
+          <div className={cn("text-5xl sm:text-6xl font-bold tracking-tight mb-2", scoreColor)}>{pct}%</div>
           <p className="text-foreground-muted text-sm">{result.correct_answers} correct out of {result.total_questions} questions</p>
-          <div className="flex justify-center gap-6 mt-5 text-sm">
+          <div className="flex justify-center gap-6 mt-5 text-sm flex-wrap">
             <div className="flex items-center gap-2 text-success">
               <CheckCircle2 className="h-4 w-4" /><span className="font-semibold">{result.correct_answers} correct</span>
             </div>
@@ -398,70 +398,188 @@ export default function QuizzesPage() {
         </div>
 
         {/* Recommendations */}
-        {result.recommendations.length > 0 && (
+        {result.recommendations && result.recommendations.length > 0 && (
           <div className="rounded-xl bg-primary-subtle border border-primary/20 p-4">
             <p className="font-semibold text-sm text-primary flex items-center gap-2 mb-2">
               <TrendingUp className="h-4 w-4" />Recommendations
             </p>
-            {result.recommendations.map((r, i) => (
-              <p key={i} className="text-xs text-primary/80 flex gap-2"><span>•</span>{r}</p>
-            ))}
+            <div className="space-y-1">
+              {result.recommendations.map((r, i) => (
+                <p key={i} className="text-xs text-primary/80 flex gap-2"><span>•</span>{r}</p>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => setShowReview(v => !v)} variant="outline" size="sm">
-            {showReview ? "Hide" : "Review"} Answers
+        {/* Action buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <Button
+            onClick={() => setShowReview(v => !v)}
+            variant={showReview ? "default" : "outline"}
+            className="flex-1 font-semibold"
+          >
+            {showReview ? "Hide Answer Review" : "Review Answers with Explanations"}
           </Button>
-          <Button onClick={reset} size="sm" className="gap-1.5">
-            <RotateCcw className="h-3.5 w-3.5" />New Quiz
+          <Button onClick={reset} variant="secondary" className="flex-1 sm:flex-initial gap-1.5">
+            <RotateCcw className="h-4 w-4" /> Take Another Quiz
           </Button>
         </div>
 
-        {/* Answer review */}
+        {/* Answer review section */}
         {showReview && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold">Answer Review</h2>
-              <Button 
-                variant={showIncorrectOnly ? "secondary" : "ghost"} 
-                size="sm" 
-                onClick={() => setShowIncorrectOnly(!showIncorrectOnly)}
-              >
-                Incorrect Only
-              </Button>
+          <div className="space-y-4 pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-3">
+              <div>
+                <h2 className="text-lg font-bold">Quiz Answer Review</h2>
+                <p className="text-xs text-muted-foreground">Detailed breakdown of each question, your answer, and why the correct choice is right.</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button 
+                  variant={!showIncorrectOnly ? "default" : "outline"} 
+                  size="sm" 
+                  onClick={() => setShowIncorrectOnly(false)}
+                  className="text-xs h-8"
+                >
+                  All ({result.answers.length})
+                </Button>
+                <Button 
+                  variant={showIncorrectOnly ? "destructive" : "outline"} 
+                  size="sm" 
+                  onClick={() => setShowIncorrectOnly(true)}
+                  className="text-xs h-8"
+                >
+                  Incorrect Only ({result.incorrect_answers})
+                </Button>
+              </div>
             </div>
-            {filteredAnswers.map((item, idx) => {
-              const correctOpt = item.question.options?.find(o => o.is_correct);
-              const selectedOpt = item.question.options?.find(o => o.id === item.student_answer.selected_option_id);
-              return (
-                <Card key={idx} className={cn("border-l-4", item.is_correct ? "border-l-success" : "border-l-destructive")}>
-                  <CardContent className="p-4">
-                    <div className="flex gap-2 mb-3">
-                      {item.is_correct
-                        ? <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                        : <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />}
-                      <p className="text-sm font-medium leading-snug">{item.question.text}</p>
-                    </div>
-                    {!item.is_correct && selectedOpt && (
-                      <p className="text-xs text-destructive mb-1.5">Your answer: <strong>{selectedOpt.label}. {selectedOpt.text}</strong></p>
+
+            <div className="space-y-4">
+              {filteredAnswers.map((item, idx) => {
+                const questionOptions = item.question?.options || [];
+                const studentSelId = item.selected_option_id ?? item.student_answer?.selected_option_id ?? answers[item.question.id];
+                const isCorrect = item.is_correct;
+
+                return (
+                  <Card
+                    key={item.question.id || idx}
+                    className={cn(
+                      "overflow-hidden border-2 shadow-sm transition-all",
+                      isCorrect
+                        ? "border-emerald-500/40 bg-card"
+                        : "border-rose-500/40 bg-card"
                     )}
-                    {correctOpt && (
-                      <p className="text-xs text-success mb-2">Correct: <strong>{correctOpt.label}. {correctOpt.text}</strong></p>
-                    )}
-                    {item.question.explanation && (
-                      <div className="text-xs text-foreground-muted bg-surface border border-border rounded-lg p-2.5 mt-2">
-                        <strong className="text-foreground">Explanation: </strong>{item.question.explanation}
+                  >
+                    <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50 bg-muted/20">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-2.5">
+                          <span className={cn(
+                            "flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold text-white shrink-0 mt-0.5",
+                            isCorrect ? "bg-emerald-600" : "bg-rose-600"
+                          )}>
+                            {idx + 1}
+                          </span>
+                          <div>
+                            <p className="text-sm sm:text-base font-semibold text-foreground leading-snug">
+                              {item.question.text}
+                            </p>
+                          </div>
+                        </div>
+
+                        <Badge
+                          className={cn(
+                            "text-xs shrink-0 font-bold",
+                            isCorrect
+                              ? "bg-emerald-600 text-white"
+                              : "bg-rose-600 text-white"
+                          )}
+                        >
+                          {isCorrect ? "CORRECT" : "INCORRECT"}
+                        </Badge>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-            {filteredAnswers.length === 0 && (
-              <p className="text-sm text-foreground-muted text-center py-4">No incorrect answers to review.</p>
-            )}
+                    </CardHeader>
+
+                    <CardContent className="p-4 sm:p-5 space-y-3">
+                      {/* All Options Breakdown */}
+                      <div className="space-y-2">
+                        {questionOptions.map((opt) => {
+                          const isOptionCorrect = opt.is_correct || opt.id === item.correct_option_id;
+                          const isOptionSelected = opt.id === studentSelId;
+
+                          let containerClasses = "border-border bg-background text-foreground";
+                          let badgeContent = null;
+
+                          if (isOptionCorrect && isOptionSelected) {
+                            containerClasses = "border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 font-semibold shadow-xs";
+                            badgeContent = (
+                              <span className="text-2xs font-bold bg-emerald-600 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" /> Your Choice (Correct)
+                              </span>
+                            );
+                          } else if (isOptionCorrect && !isOptionSelected) {
+                            containerClasses = "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-100 font-semibold";
+                            badgeContent = (
+                              <span className="text-2xs font-bold bg-emerald-600 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" /> Correct Answer
+                              </span>
+                            );
+                          } else if (!isOptionCorrect && isOptionSelected) {
+                            containerClasses = "border-rose-500 bg-rose-50/80 dark:bg-rose-950/30 text-rose-950 dark:text-rose-100 font-semibold shadow-xs";
+                            badgeContent = (
+                              <span className="text-2xs font-bold bg-rose-600 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <XCircle className="h-3 w-3" /> Your Choice (Wrong)
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <div
+                              key={opt.id}
+                              className={cn(
+                                "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border text-xs sm:text-sm gap-2 transition-colors",
+                                containerClasses
+                              )}
+                            >
+                              <div className="flex items-start gap-2.5 min-w-0">
+                                <span className={cn(
+                                  "font-mono font-bold px-1.5 py-0.5 rounded text-xs shrink-0",
+                                  isOptionCorrect
+                                    ? "bg-emerald-600 text-white"
+                                    : isOptionSelected
+                                    ? "bg-rose-600 text-white"
+                                    : "bg-muted text-muted-foreground"
+                                )}>
+                                  {opt.label}
+                                </span>
+                                <span className="leading-snug">{opt.text}</span>
+                              </div>
+                              {badgeContent && <div className="self-end sm:self-center shrink-0">{badgeContent}</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Clear Rationale / Explanation Box */}
+                      {item.question.explanation && (
+                        <div className="rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-800 p-3.5 sm:p-4 text-xs sm:text-sm mt-3 space-y-1">
+                          <p className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                            <span>💡 Detailed Explanation:</span>
+                          </p>
+                          <p className="text-amber-950/90 dark:text-amber-100/90 leading-relaxed">
+                            {item.question.explanation}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+
+              {filteredAnswers.length === 0 && (
+                <div className="text-center py-8 bg-muted/20 rounded-xl border border-border">
+                  <p className="text-sm text-muted-foreground">No incorrect answers to review. Great job!</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

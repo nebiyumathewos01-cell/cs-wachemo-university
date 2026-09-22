@@ -41,3 +41,65 @@ class PaginatedPastExams(BaseModel):
     page: int
     per_page: int
     pages: int
+
+
+# ─── AI Auto-Organizer Schemas ─────────────────────────────────
+
+class AIAnalyzedMaterial(BaseModel):
+    filename: str
+    original_filename: str
+    title: str
+    description: Optional[str] = None
+    academic_year_name: str
+    academic_year_id: Optional[int] = None
+    semester_name: str
+    semester_id: Optional[int] = None
+    course_name: str
+    course_id: Optional[int] = None
+    chapter_number: int
+    chapter_title: str
+    chapter_id: Optional[int] = None
+    confidence: float
+    reasoning: str
+    is_new_course: bool
+    is_new_chapter: bool
+
+
+class AIAnalyzeBatchResponse(BaseModel):
+    items: list[AIAnalyzedMaterial]
+    total_files: int
+
+
+class AIConfirmMaterialItem(BaseModel):
+    filename: str
+    original_filename: str
+    title: str
+    description: Optional[str] = None
+    academic_year_id: Optional[int] = None
+    academic_year_name: Optional[str] = None
+    semester_id: Optional[int] = None
+    semester_name: Optional[str] = None
+    course_id: Optional[int] = None
+    course_name: str
+    chapter_id: Optional[int] = None
+    chapter_number: int
+    chapter_title: str
+
+
+class AIConfirmBatchRequest(BaseModel):
+    items: list[AIConfirmMaterialItem]
+
+
+class AIConfirmedResultItem(BaseModel):
+    material_id: int
+    title: str
+    course_name: str
+    chapter_title: str
+    status: str
+
+
+class AIConfirmBatchResponse(BaseModel):
+    message: str
+    created_count: int
+    results: list[AIConfirmedResultItem]
+

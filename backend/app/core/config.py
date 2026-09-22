@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE_MB: int = 50
 
     # ─── CORS ─────────────────────────────────────────────────
-    ALLOWED_ORIGINS: str = "http://localhost:5173"
+    ALLOWED_ORIGINS: str = "*"
 
     # ─── Admin Seed ───────────────────────────────────────────
     ADMIN_EMAIL: str = "neba@gmail.com"

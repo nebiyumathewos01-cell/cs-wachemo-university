@@ -134,6 +134,66 @@ export interface Material {
   created_at: string;
 }
 
+export interface AIAnalyzedMaterial {
+  filename: string;
+  original_filename: string;
+  title: string;
+  description?: string;
+  academic_year_name: string;
+  academic_year_id?: number | null;
+  semester_name: string;
+  semester_id?: number | null;
+  course_name: string;
+  course_id?: number | null;
+  chapter_number: number;
+  chapter_title: string;
+  chapter_id?: number | null;
+  confidence: number;
+  reasoning: string;
+  is_new_course: boolean;
+  is_new_chapter: boolean;
+}
+
+export interface AIAnalyzeBatchResponse {
+  items: AIAnalyzedMaterial[];
+  total_files: number;
+}
+
+export interface AIConfirmMaterialItem {
+  filename: string;
+  original_filename: string;
+  title: string;
+  description?: string;
+  academic_year_id?: number | null;
+  academic_year_name?: string;
+  semester_id?: number | null;
+  semester_name?: string;
+  course_id?: number | null;
+  course_name: string;
+  chapter_id?: number | null;
+  chapter_number: number;
+  chapter_title: string;
+}
+
+export interface AIConfirmBatchRequest {
+  items: AIConfirmMaterialItem[];
+}
+
+export interface AIConfirmedResultItem {
+  material_id: number;
+  title: string;
+  course_name: string;
+  chapter_title: string;
+  status: string;
+}
+
+export interface AIConfirmBatchResponse {
+  message: string;
+  created_count: number;
+  results: AIConfirmedResultItem[];
+}
+
+
 export interface PastExam {
   id: number;
   title: string;

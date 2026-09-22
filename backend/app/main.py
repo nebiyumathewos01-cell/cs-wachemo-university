@@ -120,9 +120,14 @@ def create_app() -> FastAPI:
     )
 
     # CORS
+    origins = settings.allowed_origins_list
+    if "*" in origins or not origins:
+        origins = ["*"]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.allowed_origins_list,
+        allow_origins=origins,
+        allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.onrender\.com|http://localhost:.*|http://127\.0\.0\.1:.*",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

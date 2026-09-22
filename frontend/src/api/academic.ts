@@ -67,6 +67,19 @@ export const materialsApi = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
 
+  aiAnalyzeBatch: (formData: FormData) =>
+    apiClient.post<{ items: import("@/types").AIAnalyzedMaterial[]; total_files: number }>(
+      "/materials/ai-analyze-batch",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    ),
+
+  aiConfirmBatch: (data: { items: import("@/types").AIConfirmMaterialItem[] }) =>
+    apiClient.post<import("@/types").AIConfirmBatchResponse>(
+      "/materials/ai-confirm-batch",
+      data
+    ),
+
   getMaterial: (id: number) =>
     apiClient.get<Material>(`/materials/${id}`),
 

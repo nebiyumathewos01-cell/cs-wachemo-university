@@ -5,11 +5,13 @@ from pathlib import Path
 from fastapi import HTTPException, UploadFile, status
 from app.core.config import settings
 
-ALLOWED_EXTENSIONS = {".pdf", ".doc", ".docx", ".txt"}
+ALLOWED_EXTENSIONS = {".pdf", ".doc", ".docx", ".txt", ".ppt", ".pptx"}
 ALLOWED_MIME_TYPES = {
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "text/plain",
 }
 

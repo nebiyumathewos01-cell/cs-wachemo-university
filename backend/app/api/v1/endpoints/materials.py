@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Optional
 from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, File, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
@@ -137,12 +138,15 @@ from app.schemas.material import (
 @router.post("/materials/ai-analyze-batch", response_model=AIAnalyzeBatchResponse)
 async def ai_analyze_batch_materials(
     files: list[UploadFile] = File(...),
+    academic_year_id: Optional[int] = Form(None),
+    semester_id: Optional[int] = Form(None),
+    course_id: Optional[int] = Form(None),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin),
 ):
     """
-    Bulk upload files. AI Agent scans each file's title and content,
-    and returns intelligent mapping suggestions for Year, Semester, Course, and Chapter.
+    Bulk upload files with optional Year & Semester context.
+    AI Agent scans each file's title and content to identify Course and Chapter.
     """
     if not files:
         raise HTTPException(status_code=400, detail="No files provided for analysis.")
@@ -157,12 +161,15 @@ async def ai_analyze_batch_materials(
         if original_filename.lower().endswith(".pdf"):
             extracted_text = extract_text_from_pdf(unique_filename, "materials")
 
-        # Run AI Classifier Agent
+        # Run AI Classifier Agent with year/semester guidance
         analysis = analyze_material_with_agent(
             filename=unique_filename,
             original_filename=original_filename,
             extracted_text=extracted_text,
             db=db,
+            academic_year_id=academic_year_id,
+            semester_id=semester_id,
+            course_id=course_id,
         )
         analyzed_items.append(AIAnalyzedMaterial(**analysis))
 

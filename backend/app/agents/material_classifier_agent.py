@@ -12,34 +12,129 @@ from app.core.config import settings
 from app.models.academic import AcademicYear, Semester, Course, Chapter
 
 
-# Standard CS curriculum reference knowledge for Wachemo University / Ethiopian Higher Education CS Curriculums
+# Standard CS curriculum reference knowledge for Wachemo University
 STANDARD_CS_CURRICULUM = {
-    # 2nd Year Semester I
-    "Object Oriented Programming": {"year": "2nd Year", "sem": "Semester I", "aliases": ["object oriented programming", "oop", "java", "c++", "object oriented"]},
-    "Data Structures and Algorithms": {"year": "2nd Year", "sem": "Semester I", "aliases": ["data structures and algorithms", "data structures", "dsa", "algorithms", "stack", "queue", "tree", "graph"]},
-    "Computer Organization and Architecture": {"year": "2nd Year", "sem": "Semester I", "aliases": ["computer organization and architecture", "computer organization", "coa", "microprocessor", "assembly", "cpu architecture"]},
-    "Discrete Mathematics": {"year": "2nd Year", "sem": "Semester I", "aliases": ["discrete mathematics", "discrete", "logic", "set theory", "combinatorics"]},
+    # ─── 2nd Year 1st Semester ──────────────────────────────────
+    "Linear Algebra": {
+        "year": "2nd Year", "sem": "Semester I",
+        "aliases": ["linear algebra", "algebra", "matrix", "matrices", "determinant", "vector space", "eigenvalues", "math201"]
+    },
+    "Fundamentals of Programming": {
+        "year": "2nd Year", "sem": "Semester I",
+        "aliases": ["fundamentals of programming", "programming", "c++", "cpp", "coding", "pointers", "arrays", "functions", "cosc201"]
+    },
+    "Fundamentals of Database Systems": {
+        "year": "2nd Year", "sem": "Semester I",
+        "aliases": ["fundamentals of database systems", "fundamental database", "database fundamentals", "dbms", "database", "sql", "relational model", "erd", "normalization", "cosc203"]
+    },
+    "Digital Logic Design": {
+        "year": "2nd Year", "sem": "Semester I",
+        "aliases": ["digital logic design", "digital logic", "dld", "boolean algebra", "logic gates", "karnaugh", "flip flop", "multiplexer", "cosc205"]
+    },
+    "Probability and Statistics": {
+        "year": "2nd Year", "sem": "Semester I",
+        "aliases": ["probability and statistics", "probability", "statistics", "random variables", "distributions", "stat201"]
+    },
+    "Inclusiveness": {
+        "year": "2nd Year", "sem": "Semester I",
+        "aliases": ["inclusiveness", "inclusive education", "diversity", "special needs", "snie201"]
+    },
+    "Introduction to Economics": {
+        "year": "2nd Year", "sem": "Semester I",
+        "aliases": ["introduction to economics", "economics", "microeconomics", "macroeconomics", "econ201"]
+    },
 
-    # 2nd Year Semester II
-    "Operating Systems": {"year": "2nd Year", "sem": "Semester II", "aliases": ["operating systems", "operating system", "os", "process", "thread", "scheduling", "deadlock", "memory management", "concurrency"]},
-    "Database Systems": {"year": "2nd Year", "sem": "Semester II", "aliases": ["database systems", "database system", "dbms", "database", "sql", "relational", "erd", "normalization", "nosql"]},
-    "Design and Analysis of Algorithms": {"year": "2nd Year", "sem": "Semester II", "aliases": ["design and analysis of algorithms", "daa", "algorithm analysis", "dynamic programming", "greedy", "divide and conquer"]},
-    "Web Programming": {"year": "2nd Year", "sem": "Semester II", "aliases": ["web programming", "web development", "web", "html", "css", "javascript", "react", "php", "full stack", "backend", "frontend"]},
+    # ─── 2nd Year 2nd Semester ──────────────────────────────────
+    "Data Structures and Algorithms": {
+        "year": "2nd Year", "sem": "Semester II",
+        "aliases": ["data structures and algorithms", "data structures", "dsa", "algorithms", "stack", "queue", "linked list", "trees", "graphs", "sorting", "searching", "cosc202"]
+    },
+    "Advanced Database Systems": {
+        "year": "2nd Year", "sem": "Semester II",
+        "aliases": ["advanced database systems", "advanced database system", "advanced database", "advanced dbms", "query optimization", "nosql", "transactions", "concurrency control", "indexing", "cosc204"]
+    },
+    "Computer Organization and Architecture": {
+        "year": "2nd Year", "sem": "Semester II",
+        "aliases": ["computer organization and architecture", "computer organization", "coa", "computer architecture", "instruction set", "cpu design", "memory hierarchy", "cosc206"]
+    },
+    "Discrete Mathematics": {
+        "year": "2nd Year", "sem": "Semester II",
+        "aliases": ["discrete mathematics", "discrete maths", "discrete", "propositional logic", "set theory", "relations", "graph theory", "combinatorics", "math202"]
+    },
+    "Computer Networking": {
+        "year": "2nd Year", "sem": "Semester II",
+        "aliases": ["computer networking", "computer networks", "networking", "network", "cn", "tcp/ip", "osi model", "routing", "ip address", "lan", "packet", "cosc208"]
+    },
+    "Object Oriented Programming": {
+        "year": "2nd Year", "sem": "Semester II",
+        "aliases": ["object oriented programming", "oop", "java", "object oriented", "inheritance", "polymorphism", "encapsulation", "classes", "cosc210"]
+    },
 
-    # 3rd Year Semester I
-    "Software Engineering": {"year": "3rd Year", "sem": "Semester I", "aliases": ["software engineering", "swe", "se", "sdlc", "agile", "scrum", "uml", "software testing"]},
-    "Computer Networks": {"year": "3rd Year", "sem": "Semester I", "aliases": ["computer networks", "computer network", "networks", "networking", "network", "cn", "tcp/ip", "osi model", "routing", "ip address", "lan", "packet"]},
-    "Theory of Computation": {"year": "3rd Year", "sem": "Semester I", "aliases": ["theory of computation", "automata theory", "toc", "automata", "turing machine", "cfg", "regular expression", "formal languages"]},
-    "Mobile Application Development": {"year": "3rd Year", "sem": "Semester I", "aliases": ["mobile application development", "mobile app", "mobile", "android", "flutter", "react native", "ios", "kotlin"]},
+    # ─── 3rd Year 1st Semester ──────────────────────────────────
+    "Advanced Java Programming": {
+        "year": "3rd Year", "sem": "Semester I",
+        "aliases": ["advanced java programming", "advanced java", "java programming", "multithreading", "swing", "jdbc", "servlets", "socket programming", "cosc301"]
+    },
+    "Operating Systems": {
+        "year": "3rd Year", "sem": "Semester I",
+        "aliases": ["operating systems", "operating system", "os", "process", "thread", "scheduling", "deadlock", "memory management", "virtual memory", "concurrency", "cosc303"]
+    },
+    "Automata and Complexity Theory": {
+        "year": "3rd Year", "sem": "Semester I",
+        "aliases": ["automata and complexity theory", "automata and complexity", "automata", "theory of computation", "toc", "turing machine", "cfg", "regular languages", "finite automata", "cosc305"]
+    },
+    "Global Trends": {
+        "year": "3rd Year", "sem": "Semester I",
+        "aliases": ["global trends", "globalization", "international relations", "gltr301"]
+    },
+    "Numerical Analysis": {
+        "year": "3rd Year", "sem": "Semester I",
+        "aliases": ["numerical analysis", "numerical methods", "interpolation", "root finding", "numerical integration", "math301"]
+    },
+    "Microprocessing and Assembly Language": {
+        "year": "3rd Year", "sem": "Semester I",
+        "aliases": ["microprocessing and assembly language", "micro processing and assembly language programming", "microprocessor", "assembly language", "assembly programming", "8086", "addressing modes", "interrupts", "cosc307"]
+    },
+    "Software Engineering": {
+        "year": "3rd Year", "sem": "Semester I",
+        "aliases": ["software engineering", "swe", "se", "sdlc", "agile", "scrum", "uml", "software testing", "requirements", "cosc309"]
+    },
 
-    # 3rd Year Semester II
-    "Artificial Intelligence": {"year": "3rd Year", "sem": "Semester II", "aliases": ["artificial intelligence", "ai", "machine learning", "neural network", "deep learning", "expert system", "nlp"]},
-    "Computer Security and Cryptography": {"year": "3rd Year", "sem": "Semester II", "aliases": ["computer security and cryptography", "computer security", "cyber security", "security", "cryptography", "encryption", "rsa", "firewall", "network security"]},
-    "Compiler Design": {"year": "3rd Year", "sem": "Semester II", "aliases": ["compiler design", "compiler", "parsing", "lexical analysis", "syntax tree", "code generation", "lexer"]},
-    "Distributed Systems": {"year": "3rd Year", "sem": "Semester II", "aliases": ["distributed systems", "distributed system", "distributed", "cloud computing", "rpc", "microservices", "consensus"]},
+    # ─── 3rd Year 2nd Semester ──────────────────────────────────
+    "Design and Analysis of Algorithms": {
+        "year": "3rd Year", "sem": "Semester II",
+        "aliases": ["design and analysis of algorithms", "design and analysis of algorithm", "daa", "algorithm analysis", "dynamic programming", "greedy", "divide and conquer", "complexity analysis", "cosc302"]
+    },
+    "Introduction to Artificial Intelligence": {
+        "year": "3rd Year", "sem": "Semester II",
+        "aliases": ["introduction to artificial intelligence", "introduction to ai", "artificial intelligence", "ai", "machine learning", "neural network", "expert system", "nlp", "cosc304"]
+    },
+    "Wireless Communication and Mobile Computing": {
+        "year": "3rd Year", "sem": "Semester II",
+        "aliases": ["wireless communication and mobile computing", "wireless communication", "mobile computing", "cellular networks", "wi-fi", "mobility management", "mobile networks", "cosc306"]
+    },
+    "Real-Time and Embedded Systems": {
+        "year": "3rd Year", "sem": "Semester II",
+        "aliases": ["real-time and embedded systems", "real time and ambedded system", "real time and embedded systems", "embedded systems", "embedded", "microcontrollers", "rtos", "sensors", "cosc308"]
+    },
+    "Computer Graphics": {
+        "year": "3rd Year", "sem": "Semester II",
+        "aliases": ["computer graphics", "graphics", "opengl", "rendering", "2d 3d transformation", "rasterization", "shading", "cosc310"]
+    },
+    "Entrepreneurship and Business Development": {
+        "year": "3rd Year", "sem": "Semester II",
+        "aliases": ["entrepreneurship and business development", "entrepreneurship", "business development", "mgmt302", "tech startups"]
+    },
+    "Industrial Practice": {
+        "year": "3rd Year", "sem": "Semester II",
+        "aliases": ["industrial practice", "industrial practicd", "internship", "field practice", "cosc312"]
+    },
 
-    # 4th Year / Exit Exam
-    "Exit Exam Preparation": {"year": "4th Year", "sem": "Semester I", "aliases": ["exit exam preparation", "exit exam", "national exit exam", "national exam", "exit practice", "comprehensive"]},
+    # ─── 4th Year / Exit Exam ───────────────────────────────────
+    "Exit Exam Preparation": {
+        "year": "4th Year", "sem": "Semester I",
+        "aliases": ["exit exam preparation", "exit exam", "national exit exam", "national exam", "exit practice", "comprehensive"]
+    },
 }
 
 
@@ -160,13 +255,17 @@ def analyze_material_with_agent(
     original_filename: str,
     extracted_text: Optional[str],
     db: Session,
+    academic_year_id: Optional[int] = None,
+    semester_id: Optional[int] = None,
+    course_id: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
     Main Agent Workflow:
     1. Gather DB context (All existing Academic Years, Semesters, Courses, Chapters).
-    2. Try Gemini Generative AI for high-accuracy semantic classification.
-    3. If Gemini is unavailable or fails, use heuristic classification fallback.
-    4. Map result to existing DB record IDs if found.
+    2. If Year and Semester hints are provided, scope candidates to that context.
+    3. Try Gemini Generative AI for high-accuracy semantic classification.
+    4. If Gemini is unavailable or fails, use heuristic classification fallback.
+    5. Map result to existing DB record IDs if found.
     """
     # 1. Fetch DB Catalog Context
     years = db.query(AcademicYear).all()
@@ -174,8 +273,22 @@ def analyze_material_with_agent(
     chapters = db.query(Chapter).all()
 
     years_map = {y.id: y.name for y in years}
+    semesters_map = {s.id: s.name for s in db.query(Semester).all()}
+
+    # Resolve locked hints if provided
+    hint_year = db.query(AcademicYear).filter(AcademicYear.id == academic_year_id).first() if academic_year_id else None
+    hint_sem = db.query(Semester).filter(Semester.id == semester_id).first() if semester_id else None
+    hint_course = db.query(Course).filter(Course.id == course_id).first() if course_id else None
+
+    # Filter candidate courses if hints exist
+    scoped_courses = courses
+    if hint_year:
+        scoped_courses = [c for c in scoped_courses if c.academic_year_id == hint_year.id]
+    if hint_sem:
+        scoped_courses = [c for c in scoped_courses if c.semester_id == hint_sem.id]
+
     courses_info = []
-    for c in courses:
+    for c in scoped_courses:
         courses_info.append({
             "id": c.id,
             "name": c.name,
@@ -183,6 +296,7 @@ def analyze_material_with_agent(
             "academic_year_id": c.academic_year_id,
             "semester_id": c.semester_id,
             "year_name": years_map.get(c.academic_year_id, "2nd Year"),
+            "semester_name": semesters_map.get(c.semester_id, "Semester I"),
         })
 
     existing_courses_list = [c["name"] for c in courses_info]
@@ -195,6 +309,14 @@ def analyze_material_with_agent(
             model = genai.GenerativeModel("gemini-1.5-flash")
             text_preview = (extracted_text or "")[:3500]
             
+            hint_str = ""
+            if hint_year:
+                hint_str += f"\n- LIKELY ACADEMIC YEAR: {hint_year.name}"
+            if hint_sem:
+                hint_str += f"\n- LIKELY SEMESTER: {hint_sem.name}"
+            if hint_course:
+                hint_str += f"\n- LIKELY COURSE: {hint_course.name}"
+
             prompt = f"""You are an Autonomous AI Academic Registrar for the Computer Science Department at Wachemo University.
 Your task is to analyze the uploaded course file and classify where it belongs in the curriculum.
 
@@ -205,13 +327,13 @@ FILE DETAILS:
 
 EXISTING CURRICULUM CONTEXT:
 - Available Years: {json.dumps(existing_years_list)}
-- Available Courses: {json.dumps(existing_courses_list)}
-- Available Semesters: ["Semester I", "Semester II"]
+- Available Courses for this context: {json.dumps(existing_courses_list)}
+- Available Semesters: ["Semester I", "Semester II"]{hint_str}
 
 INSTRUCTIONS:
-1. Identify the Course (e.g., "Operating Systems", "Data Structures and Algorithms", "Computer Networks", "Database Systems", "Software Engineering", "Artificial Intelligence", etc.). If it closely matches an existing course name, use that exact name.
-2. Identify the Academic Year ("2nd Year", "3rd Year", or "4th Year").
-3. Identify the Semester ("Semester I" or "Semester II").
+1. Identify the Course (e.g., "Operating Systems", "Data Structures and Algorithms", "Computer Networks", "Database Systems", "Software Engineering", "Artificial Intelligence", etc.). If it matches an existing course, use that exact name.
+2. Identify the Academic Year ({f'Strictly "{hint_year.name}"' if hint_year else '"2nd Year", "3rd Year", or "4th Year"'}).
+3. Identify the Semester ({f'Strictly "{hint_sem.name}"' if hint_sem else '"Semester I" or "Semester II"'}).
 4. Identify the Chapter Number (integer, e.g. 1, 2, 3, 4, 5, 6...).
 5. Identify a clear, concise Chapter Title (e.g., "Process Management", "Binary Trees & BST", "Network Layer & IP Addressing").
 6. Provide a Clean Material Title (e.g., "Chapter 1 - Introduction to Operating Systems Slides").
@@ -221,9 +343,9 @@ INSTRUCTIONS:
 
 RETURN FORMAT: Return ONLY valid JSON in this exact structure, with no markdown codeblocks:
 {{
-  "course_name": "Operating Systems",
-  "academic_year_name": "2nd Year",
-  "semester_name": "Semester II",
+  "course_name": "{hint_course.name if hint_course else 'Operating Systems'}",
+  "academic_year_name": "{hint_year.name if hint_year else '2nd Year'}",
+  "semester_name": "{hint_sem.name if hint_sem else 'Semester II'}",
   "chapter_number": 2,
   "chapter_title": "Process Management and CPU Scheduling",
   "clean_title": "Chapter 2 - Processes and Scheduling Slides",
@@ -247,18 +369,19 @@ RETURN FORMAT: Return ONLY valid JSON in this exact structure, with no markdown 
     final_data = llm_result or _heuristic_classify(original_filename, extracted_text, existing_years_list, courses_info)
 
     # 4. Resolve IDs from DB
-    # Match Year
-    year_obj = None
-    for y in years:
-        if y.name.lower() in final_data.get("academic_year_name", "").lower() or final_data.get("academic_year_name", "").lower() in y.name.lower():
-            year_obj = y
-            break
+    # Year: prioritize hint if provided
+    year_obj = hint_year
+    if not year_obj:
+        for y in years:
+            if y.name.lower() in final_data.get("academic_year_name", "").lower() or final_data.get("academic_year_name", "").lower() in y.name.lower():
+                year_obj = y
+                break
     if not year_obj and years:
         year_obj = years[0]
 
-    # Match Semester
-    sem_obj = None
-    if year_obj:
+    # Semester: prioritize hint if provided
+    sem_obj = hint_sem
+    if not sem_obj and year_obj:
         semesters = db.query(Semester).filter(Semester.academic_year_id == year_obj.id).all()
         for s in semesters:
             if s.name.lower() == final_data.get("semester_name", "").lower():
@@ -267,15 +390,22 @@ RETURN FORMAT: Return ONLY valid JSON in this exact structure, with no markdown 
         if not sem_obj and semesters:
             sem_obj = semesters[0]
 
-    # Match Course
-    course_obj = None
-    c_target = final_data.get("course_name", "").lower()
-    for c in courses:
-        if c.name.lower() == c_target or c_target in c.name.lower() or (c.code and c.code.lower() == c_target):
-            course_obj = c
-            break
+    # Course: prioritize hint if provided
+    course_obj = hint_course
+    if not course_obj:
+        c_target = final_data.get("course_name", "").lower()
+        for c in scoped_courses:
+            if c.name.lower() == c_target or c_target in c.name.lower() or (c.code and c.code.lower() == c_target):
+                course_obj = c
+                break
+        # Fallback check across all courses
+        if not course_obj:
+            for c in courses:
+                if c.name.lower() == c_target or c_target in c.name.lower() or (c.code and c.code.lower() == c_target):
+                    course_obj = c
+                    break
 
-    # Match Chapter if course exists
+    # Chapter: Match if course exists
     chapter_obj = None
     ch_num = int(final_data.get("chapter_number", 1))
     if course_obj:
@@ -298,8 +428,9 @@ RETURN FORMAT: Return ONLY valid JSON in this exact structure, with no markdown 
         "chapter_number": ch_num,
         "chapter_title": final_data.get("chapter_title", f"Chapter {ch_num}"),
         "chapter_id": chapter_obj.id if chapter_obj else None,
-        "confidence": float(final_data.get("confidence", 0.9)),
+        "confidence": float(final_data.get("confidence", 0.95 if hint_year else 0.85)),
         "reasoning": final_data.get("reasoning", "Classified automatically by Agentic AI."),
         "is_new_course": course_obj is None,
         "is_new_chapter": chapter_obj is None,
     }
+

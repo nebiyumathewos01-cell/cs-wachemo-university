@@ -1,7 +1,19 @@
 /// <reference types="vite/client" />
 import axios, { AxiosError, type AxiosResponse } from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!envUrl) {
+    return "http://localhost:8000/api/v1";
+  }
+  let url = envUrl.trim().replace(/\/+$/, "");
+  if (!url.endsWith("/api/v1")) {
+    url = `${url}/api/v1`;
+  }
+  return url;
+}
+
+const BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,

@@ -8,7 +8,7 @@ import {
   Brain, FileText,
   ShieldCheck, KeyRound, Mail,
   Sparkles, Zap, GraduationCap,
-  CreditCard, Copy, Target
+  CreditCard, Copy
 } from "lucide-react";
 import { useAuth, getErrorMessage } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/useToast";
@@ -123,7 +123,7 @@ export default function LoginPage() {
           {/* Feature Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {[
-              { icon: GraduationCap, title: "Exit Exam & GPE Prep", desc: "National Exit Exam & GPE competency mastery", highlight: true },
+              { icon: GraduationCap, title: "National Exit Exam Prep", desc: "National Exit Exam competency mastery", highlight: true },
               { icon: FileText, title: "Course Materials", desc: "Organized lecture slides & notes", highlight: false },
               { icon: Brain, title: "AI Chapter Quizzes", desc: "Interactive practice with explanations", highlight: false },
               { icon: Zap, title: "AI Study Assistant", desc: "24/7 intelligent course guidance", highlight: false },
@@ -272,25 +272,15 @@ export default function LoginPage() {
             </div>
 
             {/* Quick Exam Prep Buttons */}
-            <div className="grid grid-cols-2 gap-2 pt-0.5">
+            <div className="pt-0.5">
               <Link to="/exit-exam" className="w-full">
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
-                  className="w-full text-[11px] font-semibold h-8 bg-purple-100/80 dark:bg-purple-950/50 text-purple-900 dark:text-purple-300 hover:bg-purple-200/80"
+                  className="w-full text-xs font-semibold h-8 bg-purple-100/80 dark:bg-purple-950/50 text-purple-900 dark:text-purple-300 hover:bg-purple-200/80 gap-1.5"
                 >
-                  <GraduationCap className="h-3.5 w-3.5 mr-1 text-purple-600" /> Exit Exam (Soon)
-                </Button>
-              </Link>
-              <Link to="/gpe-exam" className="w-full">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="w-full text-[11px] font-semibold h-8 bg-indigo-100/80 dark:bg-indigo-950/50 text-indigo-900 dark:text-indigo-300 hover:bg-indigo-200/80"
-                >
-                  <Target className="h-3.5 w-3.5 mr-1 text-indigo-600" /> GPE Exam Prep
+                  <GraduationCap className="h-3.5 w-3.5 text-purple-600" /> National Exit Exam Hub (Coming Soon)
                 </Button>
               </Link>
             </div>

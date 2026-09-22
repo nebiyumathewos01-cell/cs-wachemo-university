@@ -37,7 +37,6 @@ const PaymentPage       = lazy(() => import("@/pages/student/PaymentPage"));
 // Coming Soon & Special Exams pages
 const ExitExamPage   = lazy(() => import("@/pages/coming-soon/ExitExamPage"));
 const FourthYearPage = lazy(() => import("@/pages/coming-soon/FourthYearPage"));
-const GPEExamPage    = lazy(() => import("@/pages/student/GPEExamPage"));
 
 // Admin pages (lazy)
 const AdminDashboardPage  = lazy(() => import("@/pages/admin/AdminDashboardPage"));
@@ -115,7 +114,6 @@ function AppRoutes() {
         {/* ── Open Preview Routes (accessible to all, styled in StudentLayout) ── */}
         <Route element={<StudentLayout />}>
           <Route path="/exit-exam"             element={<ExitExamPage />} />
-          <Route path="/gpe-exam"              element={<GPEExamPage />} />
           <Route path="/payment"               element={<PaymentPage />} />
         </Route>
 

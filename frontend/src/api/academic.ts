@@ -94,6 +94,9 @@ export const materialsApi = {
   downloadMaterial: (id: number) =>
     apiClient.get(`/materials/${id}/download`, { responseType: "blob" }),
 
+  viewMaterial: (id: number) =>
+    apiClient.get(`/materials/${id}/view`, { responseType: "blob" }),
+
   deleteMaterial: (id: number) =>
     apiClient.delete(`/materials/${id}`),
 };

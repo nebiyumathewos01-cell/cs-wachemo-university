@@ -50,12 +50,12 @@ export default function PaywallBanner() {
             <h3 className="text-base sm:text-lg font-bold text-foreground">
               {isPending
                 ? "Your 50 ETB payment proof is being verified"
-                : "Unlock Complete Wachemo CS Study Materials, Exit Exam & GPE Prep"}
+                : "Unlock Complete Wachemo CS Study Materials & Exit Exam"}
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl">
               {isPending
                 ? "Our administrator is confirming your CBE transaction reference. You will receive full access right after approval!"
-                : "Get unlimited access to all courses, lecture slides, AI quiz generator, Exit Exam & GPE prep for a promotional fee of only 50 Birr (valid until Sept 30, 2026 · Regular: 100 ETB)."}
+                : "Get unlimited access to all courses, lecture slides, AI quiz generator, & Exit Exam prep for a promotional fee of only 50 Birr (valid until Sept 30, 2026 · Regular: 100 ETB)."}
             </p>
           </div>
 

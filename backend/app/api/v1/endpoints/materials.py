@@ -95,8 +95,49 @@ def list_materials(chapter_id: int, db: Session = Depends(get_db), _: User = Dep
     ]
 
 
+@router.get("/materials/{material_id}/view")
+def view_material(material_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user.is_paid and current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Material access is restricted to paid members only. Please submit payment of 50 ETB via CBE."
+        )
+
+    mat = db.query(Material).filter(Material.id == material_id).first()
+    if not mat:
+        raise HTTPException(status_code=404, detail="Material not found")
+
+    file_path = Path(settings.UPLOAD_DIR) / "materials" / mat.filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found on server")
+
+    file_type = (mat.file_type or "").lower()
+    media_type = "application/pdf"
+    if file_type in ["jpg", "jpeg"]:
+        media_type = "image/jpeg"
+    elif file_type == "png":
+        media_type = "image/png"
+    elif file_type == "gif":
+        media_type = "image/gif"
+    elif file_type in ["txt", "md", "py", "js", "cpp", "java", "c", "h", "html", "css", "json"]:
+        media_type = "text/plain"
+
+    return FileResponse(
+        path=str(file_path),
+        filename=mat.original_filename,
+        media_type=media_type,
+        headers={"Content-Disposition": f'inline; filename="{mat.original_filename}"'}
+    )
+
+
 @router.get("/materials/{material_id}/download")
-def download_material(material_id: int, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+def download_material(material_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user.is_paid and current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Material download is restricted to paid members only. Please submit payment of 50 ETB via CBE."
+        )
+
     mat = db.query(Material).filter(Material.id == material_id).first()
     if not mat:
         raise HTTPException(status_code=404, detail="Material not found")

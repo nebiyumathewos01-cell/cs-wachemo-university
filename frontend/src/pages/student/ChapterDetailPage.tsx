@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, AlertCircle, FileText, Download, ClipboardList, Brain, Lightbulb, Loader2 } from "lucide-react";
+import { ArrowLeft, AlertCircle, FileText, ClipboardList, Brain, Lightbulb, BookOpen } from "lucide-react";
 import { chaptersApi, materialsApi } from "@/api/academic";
 import type { Chapter, Material } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import EmptyState from "@/components/common/EmptyState";
 import PageHeader from "@/components/common/PageHeader";
 import { ChapterSkeleton } from "@/components/common/Skeleton";
-import { useToast } from "@/hooks/useToast";
 import { formatFileSize, formatDate } from "@/utils";
+import MaterialViewerModal from "@/components/materials/MaterialViewerModal";
 
 export default function ChapterDetailPage() {
   const { chapterId } = useParams<{ chapterId: string }>();
@@ -18,8 +18,8 @@ export default function ChapterDetailPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [downloading, setDownloading] = useState<number | null>(null);
-  const { toast } = useToast();
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   useEffect(() => {
     if (!chapterId) return;
@@ -30,21 +30,9 @@ export default function ChapterDetailPage() {
       .finally(() => setLoading(false));
   }, [chapterId]);
 
-  const handleDownload = async (m: Material) => {
-    setDownloading(m.id);
-    try {
-      const res = await materialsApi.downloadMaterial(m.id);
-      const url = URL.createObjectURL(new Blob([res.data as BlobPart]));
-      const a = document.createElement("a"); a.href = url; a.download = m.original_filename; a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      toast({
-        title: "Download failed",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    }
-    finally { setDownloading(null); }
+  const handleOpenViewer = (m: Material) => {
+    setSelectedMaterial(m);
+    setViewerOpen(true);
   };
 
   if (loading) return (
@@ -130,12 +118,14 @@ export default function ChapterDetailPage() {
                         )}
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="shrink-0 gap-1.5"
-                      onClick={() => handleDownload(m)} disabled={downloading === m.id}>
-                      {downloading === m.id
-                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        : <Download className="h-3.5 w-3.5" />}
-                      Download
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="shrink-0 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white font-medium"
+                      onClick={() => handleOpenViewer(m)}
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      View Material
                     </Button>
                   </div>
                 </CardContent>
@@ -159,6 +149,13 @@ export default function ChapterDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Material In-System Reader Modal */}
+      <MaterialViewerModal
+        material={selectedMaterial}
+        isOpen={viewerOpen}
+        onClose={() => setViewerOpen(false)}
+      />
     </div>
   );
 }

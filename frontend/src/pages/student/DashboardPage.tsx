@@ -6,7 +6,7 @@ import { progressApi } from "@/api/progress";
 import {
   BookOpen, ClipboardList, FileText, TrendingUp,
   Brain, GraduationCap, ArrowRight, ChevronRight,
-  Clock, Zap, PlayCircle, Target,
+  Clock, Zap, PlayCircle,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,6 @@ export default function DashboardPage() {
   const firstCourse = progress?.by_year?.[0]?.courses?.[0];
 
   const quickActions = [
-    { label: "GPE Exam Prep",     icon: Target,        path: "/gpe-exam",   color: "text-amber-600",  bg: "bg-amber-50" },
     { label: "Exit Exam (MoE)",   icon: GraduationCap, path: "/exit-exam",  color: "text-orange-600", bg: "bg-orange-50" },
     { label: "Browse Courses",    icon: BookOpen,      path: "/courses",    color: "text-blue-600",   bg: "bg-blue-50" },
     { label: "AI Quiz",           icon: ClipboardList, path: "/quizzes",    color: "text-violet-600", bg: "bg-violet-50" },

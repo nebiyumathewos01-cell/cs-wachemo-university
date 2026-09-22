@@ -263,11 +263,10 @@ void dijkstra(int src, int V, const vector<vector<pii>>& adj) {
     features_unlocked = [
         "Full access to 2nd, 3rd, and 4th Year Wachemo CS courses & lecture slides",
         "Comprehensive National Exit Exam Preparation & Topic-by-Topic Mock Exams",
-        "Graduate Profile Exam (GPE) Mastery & CS Competency Drills",
         "Unlimited AI Quiz generation with step-by-step reasoning & weakness analytics",
         "Official Midterm & Final Past Exam papers with solutions",
         "Interactive AI CS Study Assistant for 24/7 concept coaching",
-        "Chapter bookmarks, lecture PDF downloads, and student discussion forum",
+        "Chapter bookmarks and protected in-system lecture reader",
     ]
 
     fee_info = get_current_fee_info()

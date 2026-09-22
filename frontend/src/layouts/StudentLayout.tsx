@@ -5,7 +5,7 @@ import {
   Brain, TrendingUp, Bookmark, User, LogOut,
   Menu, X, GraduationCap, Clock, ChevronLeft,
   ChevronRight, Bell, Search, Settings, MessageSquare,
-  CreditCard, Sparkles, Target, LogIn
+  CreditCard, Sparkles, LogIn
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn, getInitials } from "@/utils";
@@ -23,7 +23,6 @@ const NAV_MAIN = [
   { label: "Past Exams",      path: "/past-exams",  icon: FileText },
   { label: "Mock Exams",      path: "/mock-exams",  icon: GraduationCap },
   { label: "AI Study",        path: "/ai-study",    icon: Brain },
-  { label: "GPE Exam Prep",   path: "/gpe-exam",    icon: Target },
   { label: "Progress",        path: "/progress",    icon: TrendingUp },
   { label: "Bookmarks",       path: "/bookmarks",   icon: Bookmark },
   { label: "Feedback & Q&A",  path: "/feedback",    icon: MessageSquare },
@@ -44,7 +43,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/past-exams": "Past Exams",
   "/mock-exams": "Mock Exams",
   "/ai-study":   "AI Study Assistant",
-  "/gpe-exam":   "Graduate Profile Exam (GPE) Preparation",
   "/exit-exam":  "National Exit Exam Hub",
   "/progress":   "My Progress",
   "/bookmarks":  "Bookmarks",

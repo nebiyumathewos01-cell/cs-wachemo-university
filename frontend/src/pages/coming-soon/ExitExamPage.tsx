@@ -12,7 +12,6 @@ import {
   Lock,
   CheckCircle2,
   XCircle,
-  ShieldCheck,
   Brain,
   Zap,
   Upload,
@@ -149,13 +148,6 @@ export default function ExitExamPage() {
               <Button className="bg-[#ff6633] hover:bg-[#e65526] text-white font-bold text-xs sm:text-sm">
                 <Brain className="h-4 w-4 mr-1.5" />
                 Take Simulated Mock Exit Exam
-              </Button>
-            </Link>
-
-            <Link to="/gpe-exam">
-              <Button variant="outline" className="border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm">
-                <ShieldCheck className="h-4 w-4 mr-1.5" />
-                Explore GPE Exam Prep
               </Button>
             </Link>
 
@@ -353,7 +345,7 @@ export default function ExitExamPage() {
       <section className="rounded-2xl border border-purple-300 dark:border-purple-800 bg-gradient-to-r from-purple-50 via-indigo-50 to-amber-50 dark:from-purple-950/40 dark:via-indigo-950/30 dark:to-amber-950/30 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
           <h3 className="text-base sm:text-lg font-bold text-foreground">
-            Get Full Access to Exit Exam & GPE Question Banks
+            Get Full Access to Exit Exam Question Banks & Materials
           </h3>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             Early bird promotional price: <strong>50 ETB</strong> until September 30, 2026 (Regular: 100 ETB).

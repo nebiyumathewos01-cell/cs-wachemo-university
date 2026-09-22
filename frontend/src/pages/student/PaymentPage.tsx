@@ -218,10 +218,6 @@ export default function PaymentPage() {
                 </li>
                 <li className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                  <span>Graduate Profile Exam (GPE) Preparation & Practice Tests</span>
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
                   <span>Unlimited AI-generated practice quizzes & weakness tracking</span>
                 </li>
                 <li className="flex items-center gap-1.5">

@@ -73,12 +73,12 @@ export default function AIStudyPage() {
   };
 
   const onCourseChange = async (v: string) => {
-    setSelCourse(v); setSelChapter("");
+    setSelCourse(v); setSelChapter("all");
     const r = await chaptersApi.getChapters(Number(v));
     setChapters(r.data);
   };
 
-  const isReady = selYear && selCourse && selChapter;
+  const isReady = Boolean(selYear && selCourse);
 
   const handleSend = async (overrideInput?: string) => {
     const q = (overrideInput ?? input).trim();
@@ -91,10 +91,11 @@ export default function AIStudyPage() {
     setLoading(true);
 
     try {
+      const chId = selChapter && selChapter !== "all" ? Number(selChapter) : null;
       const res = await aiApi.askStudyAssistant({
         academic_year_id: Number(selYear),
         course_id: Number(selCourse),
-        chapter_id: Number(selChapter),
+        chapter_id: chId,
         question: q,
       });
       const aiMsg: Message = { role: "assistant", content: res.data.answer, timestamp: new Date() };
@@ -183,6 +184,7 @@ export default function AIStudyPage() {
                 <Select value={selChapter} onValueChange={setSelChapter} disabled={!selCourse}>
                   <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Chapter" /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">✨ Whole Course (All Topics)</SelectItem>
                     {chapters.map(c => <SelectItem key={c.id} value={String(c.id)}>Ch.{c.number} {c.title}</SelectItem>)}
                   </SelectContent>
                 </Select>

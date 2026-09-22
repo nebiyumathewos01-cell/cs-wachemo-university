@@ -135,7 +135,7 @@ def _validate_question(q: dict) -> bool:
 
 def generate_quiz(
     course_id: int,
-    chapter_id: int,
+    chapter_id: Optional[int],
     num_questions: int,
     difficulty: Difficulty,
     db: Session,
@@ -143,7 +143,7 @@ def generate_quiz(
     """
     Agentic workflow:
     1. Retrieve course
-    2. Retrieve chapter
+    2. Retrieve chapter (or use comprehensive course topics if chapter_id is None)
     3. Gather material context
     4. Call Gemini
     5. Parse & validate questions
@@ -153,22 +153,28 @@ def generate_quiz(
 
     # Step 1-2: Context retrieval
     course = retrieve_course(course_id, db)
-    chapter = retrieve_chapter(chapter_id, db)
+    if not course:
+        return [], "Course not found"
 
-    if not course or not chapter:
-        return [], "failed"
+    chapter = retrieve_chapter(chapter_id, db) if chapter_id else None
+    chapter_title = chapter["title"] if chapter else "All Chapters & Comprehensive Course Topics"
 
     # Step 3: Get material text
-    context = get_chapter_context(chapter_id, db, max_chars=8000)
+    if chapter_id:
+        context = get_chapter_context(chapter_id, db, max_chars=8000)
+    else:
+        from app.agents.tools import get_course_context
+        context = get_course_context(course_id, db, max_chars=8000)
 
     if not settings.GEMINI_API_KEY:
-        return [], "failed"
+        return [], "GEMINI_API_KEY is not configured"
 
     # Step 4: Call Gemini
     try:
+        genai.configure(api_key=settings.GEMINI_API_KEY)
         model = genai.GenerativeModel("gemini-1.5-flash")
         prompt = _build_quiz_prompt(
-            chapter_title=chapter["title"],
+            chapter_title=chapter_title,
             course_name=course["name"],
             context=context,
             num_questions=num_questions,
@@ -188,26 +194,32 @@ def generate_quiz(
 
 def answer_study_question(
     course_id: int,
-    chapter_id: int,
+    chapter_id: Optional[int],
     question: str,
     db: Session,
 ) -> str:
     """Answer a student study question grounded in course materials."""
     course = retrieve_course(course_id, db)
-    chapter = retrieve_chapter(chapter_id, db)
+    if not course:
+        return "Could not find the specified course."
 
-    if not course or not chapter:
-        return "Could not find the specified course or chapter."
+    chapter = retrieve_chapter(chapter_id, db) if chapter_id else None
+    chapter_title = chapter["title"] if chapter else "Comprehensive Course Content"
 
-    context = get_chapter_context(chapter_id, db, max_chars=6000)
+    if chapter_id:
+        context = get_chapter_context(chapter_id, db, max_chars=6000)
+    else:
+        from app.agents.tools import get_course_context
+        context = get_course_context(course_id, db, max_chars=6000)
 
     if not settings.GEMINI_API_KEY:
         return "AI Study Assistant is not configured. Please contact your administrator."
 
     try:
+        genai.configure(api_key=settings.GEMINI_API_KEY)
         model = genai.GenerativeModel("gemini-1.5-flash")
         prompt = _build_study_prompt(
-            chapter_title=chapter["title"],
+            chapter_title=chapter_title,
             course_name=course["name"],
             context=context,
             question=question,

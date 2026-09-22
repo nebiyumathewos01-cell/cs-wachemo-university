@@ -87,7 +87,8 @@ def api_generate_quiz(
         )
 
     # Persist questions
-    quiz_title = f"AI Quiz - Chapter {data.chapter_id} ({data.difficulty.value})"
+    chapter_label = f"Chapter {data.chapter_id}" if data.chapter_id else "Comprehensive Course Quiz"
+    quiz_title = f"AI Quiz - {chapter_label} ({data.difficulty.value})"
     quiz = Quiz(
         title=quiz_title,
         chapter_id=data.chapter_id,

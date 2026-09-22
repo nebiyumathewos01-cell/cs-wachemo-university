@@ -93,3 +93,24 @@ def get_chapter_context(chapter_id: int, db: Session, max_chars: int = 8000) -> 
 
     full_text = "\n\n---\n\n".join(parts)
     return full_text[:max_chars]
+
+
+def get_course_context(course_id: int, db: Session, max_chars: int = 8000) -> str:
+    """
+    Combine material text across all chapters of a course.
+    """
+    materials = db.query(Material).filter(
+        Material.course_id == course_id,
+        Material.has_extracted_text == True,
+    ).all()
+
+    if not materials:
+        return ""
+
+    parts = []
+    for mat in materials:
+        if mat.extracted_text:
+            parts.append(f"[Material: {mat.title}]\n{mat.extracted_text}")
+
+    full_text = "\n\n---\n\n".join(parts)
+    return full_text[:max_chars]

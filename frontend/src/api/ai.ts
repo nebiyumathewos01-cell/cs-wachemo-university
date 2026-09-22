@@ -3,7 +3,7 @@ import apiClient from "./client";
 export interface StudyRequest {
   academic_year_id: number;
   course_id: number;
-  chapter_id: number;
+  chapter_id?: number | null;
   question: string;
 }
 

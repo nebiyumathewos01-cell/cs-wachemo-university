@@ -5,7 +5,7 @@ export interface GenerateQuizRequest {
   academic_year_id: number;
   semester_id: number;
   course_id: number;
-  chapter_id: number;
+  chapter_id?: number | null;
   num_questions: number;
   difficulty: Difficulty;
 }
@@ -14,7 +14,7 @@ export interface MockExamRequest {
   academic_year_id: number;
   semester_id: number;
   course_id: number;
-  chapter_ids: number[];
+  chapter_ids?: number[];
   num_questions: number;
   difficulty: Difficulty;
   time_limit_minutes: number;

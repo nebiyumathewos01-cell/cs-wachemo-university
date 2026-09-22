@@ -82,7 +82,8 @@ export default function QuizzesPage() {
   };
 
   const onCourseChange = async (v: string) => {
-    setSelCourse(v); setSelChapter("");
+    setSelCourse(v); 
+    setSelChapter("all");
     setIsChaptersLoading(true);
     try {
       const r = await chaptersApi.getChapters(Number(v));
@@ -93,12 +94,13 @@ export default function QuizzesPage() {
   };
 
   const handleGenerate = async () => {
-    if (!selYear || !selSem || !selCourse || !selChapter) {
-      setSetupError("Please select year, semester, course, and chapter."); return;
+    if (!selYear || !selSem || !selCourse) {
+      setSetupError("Please select year, semester, and course."); 
+      return;
     }
     setSetupError(""); setStep("generating");
     const genSteps = [
-      "Analyzing chapter materials…",
+      "Analyzing course & chapter materials…",
       "Retrieving relevant content…",
       "Generating questions…",
       "Validating questions…",
@@ -110,7 +112,15 @@ export default function QuizzesPage() {
       setGenStatus(genSteps[i]);
     }, 900);
     try {
-      const qr = await quizApi.generateQuiz({ academic_year_id: Number(selYear), semester_id: Number(selSem), course_id: Number(selCourse), chapter_id: Number(selChapter), num_questions: Number(numQ), difficulty });
+      const chId = selChapter && selChapter !== "all" ? Number(selChapter) : null;
+      const qr = await quizApi.generateQuiz({ 
+        academic_year_id: Number(selYear), 
+        semester_id: Number(selSem), 
+        course_id: Number(selCourse), 
+        chapter_id: chId, 
+        num_questions: Number(numQ), 
+        difficulty 
+      });
       clearInterval(interval);
       const ar = await quizApi.startQuiz(qr.data.id);
       setQuiz(qr.data); setAttemptId(ar.data.id);
@@ -193,10 +203,13 @@ export default function QuizzesPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Chapter</Label>
+              <Label>Chapter / Topic</Label>
               <Select value={selChapter} onValueChange={setSelChapter} disabled={!selCourse || isChaptersLoading}>
                 <SelectTrigger><SelectValue placeholder={isChaptersLoading ? "Loading..." : "Select chapter"} /></SelectTrigger>
-                <SelectContent>{chapters.map(c => <SelectItem key={c.id} value={String(c.id)}>Ch.{c.number} – {c.title}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  <SelectItem value="all">✨ All Chapters / Whole Course</SelectItem>
+                  {chapters.map(c => <SelectItem key={c.id} value={String(c.id)}>Ch.{c.number} – {c.title}</SelectItem>)}
+                </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">

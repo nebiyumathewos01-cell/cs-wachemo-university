@@ -46,7 +46,7 @@ class GenerateQuizRequest(BaseModel):
     academic_year_id: int
     semester_id: int
     course_id: int
-    chapter_id: int
+    chapter_id: Optional[int] = None
     num_questions: int
     difficulty: Difficulty
 
@@ -120,7 +120,7 @@ class QuizAttemptOut(BaseModel):
 class StudyRequest(BaseModel):
     academic_year_id: int
     course_id: int
-    chapter_id: int
+    chapter_id: Optional[int] = None
     question: str
 
     @field_validator("question")

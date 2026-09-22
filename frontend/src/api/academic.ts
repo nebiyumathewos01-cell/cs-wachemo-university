@@ -65,19 +65,24 @@ export const materialsApi = {
   uploadMaterial: (formData: FormData) =>
     apiClient.post<Material>("/materials/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 180000,
     }),
 
   aiAnalyzeBatch: (formData: FormData) =>
     apiClient.post<{ items: import("@/types").AIAnalyzedMaterial[]; total_files: number }>(
       "/materials/ai-analyze-batch",
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 180000,
+      }
     ),
 
   aiConfirmBatch: (data: { items: import("@/types").AIConfirmMaterialItem[] }) =>
     apiClient.post<import("@/types").AIConfirmBatchResponse>(
       "/materials/ai-confirm-batch",
-      data
+      data,
+      { timeout: 180000 }
     ),
 
   getMaterial: (id: number) =>

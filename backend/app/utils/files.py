@@ -83,8 +83,8 @@ def delete_file_if_exists(filename: str, subdir: str = "materials") -> None:
         path.unlink()
 
 
-def extract_text_from_pdf(filename: str, subdir: str = "materials") -> str | None:
-    """Extract text content from a PDF using pypdf (pure-Python, no compilation needed)."""
+def extract_text_from_pdf(filename: str, subdir: str = "materials", max_pages: int = 2) -> str | None:
+    """Extract first pages text content from a PDF quickly using pypdf."""
     try:
         from pypdf import PdfReader
         path = Path(settings.UPLOAD_DIR) / subdir / filename
@@ -92,11 +92,13 @@ def extract_text_from_pdf(filename: str, subdir: str = "materials") -> str | Non
             return None
         reader = PdfReader(str(path))
         text_parts = []
-        for page in reader.pages:
+        for i, page in enumerate(reader.pages):
+            if i >= max_pages:
+                break
             text = page.extract_text()
             if text:
-                text_parts.append(text)
+                text_parts.append(text[:1000])
         full_text = "\n".join(text_parts).strip()
-        return full_text if full_text else None
+        return full_text[:2000] if full_text else None
     except Exception:
         return None

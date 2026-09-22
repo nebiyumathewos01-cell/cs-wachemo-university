@@ -302,13 +302,24 @@ def analyze_material_with_agent(
     existing_courses_list = [c["name"] for c in courses_info]
     existing_years_list = [y.name for y in years]
 
-    # 2. Try Gemini AI LLM Analysis
+    # 2. Fast Deterministic Heuristic Matcher (< 1ms)
+    heuristic_data = _heuristic_classify(original_filename, extracted_text, existing_years_list, courses_info)
+
+    # 3. If hint provided, enforce it on heuristic result
+    if hint_year:
+        heuristic_data["academic_year_name"] = hint_year.name
+    if hint_sem:
+        heuristic_data["semester_name"] = hint_sem.name
+    if hint_course:
+        heuristic_data["course_name"] = hint_course.name
+
     llm_result = None
-    if settings.GEMINI_API_KEY:
+    # Only invoke Gemini LLM if heuristic confidence is low (< 0.75) and API key exists
+    if heuristic_data.get("confidence", 0) < 0.75 and settings.GEMINI_API_KEY:
         try:
             genai.configure(api_key=settings.GEMINI_API_KEY)
             model = genai.GenerativeModel("gemini-1.5-flash")
-            text_preview = (extracted_text or "")[:3500]
+            text_preview = (extracted_text or "")[:1500]
             
             hint_str = ""
             if hint_year:
@@ -319,46 +330,33 @@ def analyze_material_with_agent(
                 hint_str += f"\n- LIKELY COURSE: {hint_course.name}"
 
             prompt = f"""You are an Autonomous AI Academic Registrar for the Computer Science Department at Wachemo University.
-Your task is to analyze the uploaded course file and classify where it belongs in the curriculum.
+Classify this uploaded course file into the curriculum.
 
 FILE DETAILS:
 - Original Filename: "{original_filename}"
-- Document Text Sample (first few pages/slides):
-\"\"\"{text_preview if text_preview.strip() else "No extracted text (use filename and CS knowledge)"}\"\"\"
+- Document Text Sample: \"\"\"{text_preview if text_preview.strip() else "No text"}\"\"\"
 
 EXISTING CURRICULUM CONTEXT:
 - Available Years: {json.dumps(existing_years_list)}
 - Available Courses for this context: {json.dumps(existing_courses_list)}
 - Available Semesters: ["Semester I", "Semester II"]{hint_str}
 
-INSTRUCTIONS:
-1. Identify the Course (e.g., "Operating Systems", "Data Structures and Algorithms", "Computer Networks", "Database Systems", "Software Engineering", "Artificial Intelligence", etc.). If it matches an existing course, use that exact name.
-2. Identify the Academic Year ({f'Strictly "{hint_year.name}"' if hint_year else '"2nd Year", "3rd Year", or "4th Year"'}).
-3. Identify the Semester ({f'Strictly "{hint_sem.name}"' if hint_sem else '"Semester I" or "Semester II"'}).
-4. Identify the Chapter Number (integer, e.g. 1, 2, 3, 4, 5, 6...).
-5. Identify a clear, concise Chapter Title (e.g., "Process Management", "Binary Trees & BST", "Network Layer & IP Addressing").
-6. Provide a Clean Material Title (e.g., "Chapter 1 - Introduction to Operating Systems Slides").
-7. Provide a 1-sentence Description summary.
-8. Provide a confidence score between 0.0 and 1.0.
-9. Provide a brief 1-sentence reasoning.
-
-RETURN FORMAT: Return ONLY valid JSON in this exact structure, with no markdown codeblocks:
+Return ONLY valid JSON in this structure:
 {{
   "course_name": "{hint_course.name if hint_course else 'Operating Systems'}",
   "academic_year_name": "{hint_year.name if hint_year else '2nd Year'}",
   "semester_name": "{hint_sem.name if hint_sem else 'Semester II'}",
-  "chapter_number": 2,
-  "chapter_title": "Process Management and CPU Scheduling",
-  "clean_title": "Chapter 2 - Processes and Scheduling Slides",
-  "description": "Comprehensive slides covering process control blocks, context switching, and CPU scheduling algorithms.",
-  "confidence": 0.96,
-  "reasoning": "Identified PCB, CPU scheduling diagrams, and OS header from Chapter 2 lecture material."
+  "chapter_number": 1,
+  "chapter_title": "Introduction",
+  "clean_title": "Lecture Notes",
+  "description": "Summary",
+  "confidence": 0.90,
+  "reasoning": "Identified from content"
 }}
 """
             response = model.generate_content(prompt)
             raw = response.text.strip()
             raw = re.sub(r"```(?:json)?", "", raw).strip()
-            
             data = json.loads(raw)
             if data.get("course_name") and data.get("chapter_title"):
                 llm_result = data
@@ -366,8 +364,7 @@ RETURN FORMAT: Return ONLY valid JSON in this exact structure, with no markdown 
             print(f"[AI AGENT NOTE] Gemini classification fallback used: {e}")
             llm_result = None
 
-    # 3. Use Heuristic fallback if LLM failed
-    final_data = llm_result or _heuristic_classify(original_filename, extracted_text, existing_years_list, courses_info)
+    final_data = llm_result or heuristic_data
 
     # 4. Resolve IDs from DB
     # Year: prioritize hint if provided

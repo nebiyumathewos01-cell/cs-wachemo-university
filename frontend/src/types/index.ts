@@ -13,6 +13,8 @@ export interface User {
   selected_year_id: number | null;
   selected_year_name?: string | null;
   quiz_attempts_count?: number;
+  is_paid?: boolean;
+  payment_status?: "unpaid" | "pending" | "approved" | "rejected";
   created_at: string;
   is_active: boolean;
 }
@@ -358,3 +360,98 @@ export interface BreadcrumbItem {
   label: string;
   path?: string;
 }
+
+// ============================================================
+// PAYMENT & DEMO TYPES
+// ============================================================
+
+export interface Payment {
+  id: number;
+  user_id: number;
+  amount: number;
+  currency: string;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  transaction_reference: string;
+  sender_name: string;
+  phone_number?: string | null;
+  status: "pending" | "approved" | "rejected";
+  admin_notes?: string | null;
+  reviewed_at?: string | null;
+  created_at: string;
+  user_full_name?: string | null;
+  user_email?: string | null;
+  user_username?: string | null;
+}
+
+export interface PaymentSubmitRequest {
+  transaction_reference: string;
+  sender_name: string;
+  phone_number?: string;
+  amount?: number;
+}
+
+export interface PaymentStatusResponse {
+  is_paid: boolean;
+  payment_status: "unpaid" | "pending" | "approved" | "rejected";
+  price_etb: number;
+  regular_price_etb?: number;
+  is_promo?: boolean;
+  promo_deadline?: string;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  last_payment?: Payment | null;
+}
+
+export interface PaginatedPayments {
+  items: Payment[];
+  total: number;
+  page: number;
+  per_page: number;
+  pages: number;
+  pending_count: number;
+  approved_count: number;
+  rejected_count: number;
+}
+
+export interface DemoQuestionOption {
+  id: number;
+  label: string;
+  text: string;
+  is_correct: boolean;
+}
+
+export interface DemoQuestion {
+  id: number;
+  course_name: string;
+  topic: string;
+  difficulty: string;
+  text: string;
+  options: DemoQuestionOption[];
+  explanation: string;
+}
+
+export interface DemoAIAnswer {
+  topic: string;
+  prompt: string;
+  response_markdown: string;
+}
+
+export interface DemoContentResponse {
+  questions: DemoQuestion[];
+  ai_samples: DemoAIAnswer[];
+  features_unlocked: string[];
+  price_etb: number;
+  regular_price_etb?: number;
+  is_promo?: boolean;
+  promo_deadline?: string;
+  cbe_account: {
+    bank_name: string;
+    account_number: string;
+    account_name: string;
+    fee_etb: number;
+  };
+}
+

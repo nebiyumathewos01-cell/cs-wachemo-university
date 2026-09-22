@@ -21,6 +21,8 @@ class User(Base):
     role = Column(SAEnum(UserRole), nullable=False, default=UserRole.student)
     selected_year_id = Column(Integer, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    is_paid = Column(Boolean, default=False, nullable=False)
+    payment_status = Column(String(20), default="unpaid", nullable=False)  # unpaid, pending, approved, rejected
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(
         DateTime(timezone=True),
@@ -33,3 +35,4 @@ class User(Base):
     bookmarks = relationship("Bookmark", back_populates="student", lazy="dynamic")
     progress_records = relationship("StudentProgress", back_populates="student", lazy="dynamic")
     comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan", lazy="dynamic")
+    payments = relationship("Payment", back_populates="user", cascade="all, delete-orphan", foreign_keys="Payment.user_id", order_by="Payment.created_at.desc()")

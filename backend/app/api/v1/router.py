@@ -1,9 +1,10 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, academic, materials, past_exams, quiz, progress, admin, comments
+from app.api.v1.endpoints import auth, academic, materials, past_exams, quiz, progress, admin, comments, payments
 
 api_router = APIRouter()
 
 api_router.include_router(auth.router)
+api_router.include_router(payments.router)
 api_router.include_router(academic.router)
 api_router.include_router(materials.router)
 api_router.include_router(past_exams.router)

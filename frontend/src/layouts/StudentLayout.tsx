@@ -1,46 +1,55 @@
 import { useState, useEffect } from "react";
-import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate, useLocation, Outlet, Link } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, ClipboardList, FileText,
   Brain, TrendingUp, Bookmark, User, LogOut,
   Menu, X, GraduationCap, Clock, ChevronLeft,
   ChevronRight, Bell, Search, Settings, MessageSquare,
+  CreditCard, Sparkles, Target, LogIn
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn, getInitials } from "@/utils";
 import { academicApi } from "@/api/academic";
+import { Button } from "@/components/ui/button";
 import YearSelectPrompt from "@/components/common/YearSelectPrompt";
 import ThemeToggle from "@/components/common/ThemeToggle";
+import PaywallBanner from "@/components/payment/PaywallBanner";
+import PaymentModal from "@/components/payment/PaymentModal";
 
 const NAV_MAIN = [
-  { label: "Dashboard",   path: "/dashboard",   icon: LayoutDashboard },
-  { label: "Courses",     path: "/courses",     icon: BookOpen },
-  { label: "Quizzes",     path: "/quizzes",     icon: ClipboardList },
-  { label: "Past Exams",  path: "/past-exams",  icon: FileText },
-  { label: "Mock Exams",  path: "/mock-exams",  icon: GraduationCap },
-  { label: "AI Study",    path: "/ai-study",    icon: Brain },
-  { label: "Progress",    path: "/progress",    icon: TrendingUp },
-  { label: "Bookmarks",   path: "/bookmarks",   icon: Bookmark },
-  { label: "Feedback & Q&A", path: "/feedback", icon: MessageSquare },
+  { label: "Dashboard",       path: "/dashboard",   icon: LayoutDashboard },
+  { label: "Courses",         path: "/courses",     icon: BookOpen },
+  { label: "Quizzes",         path: "/quizzes",     icon: ClipboardList },
+  { label: "Past Exams",      path: "/past-exams",  icon: FileText },
+  { label: "Mock Exams",      path: "/mock-exams",  icon: GraduationCap },
+  { label: "AI Study",        path: "/ai-study",    icon: Brain },
+  { label: "GPE Exam Prep",   path: "/gpe-exam",    icon: Target },
+  { label: "Progress",        path: "/progress",    icon: TrendingUp },
+  { label: "Bookmarks",       path: "/bookmarks",   icon: Bookmark },
+  { label: "Feedback & Q&A",  path: "/feedback",    icon: MessageSquare },
+  { label: "Payment & Access", path: "/payment",   icon: CreditCard },
 ];
 
 const NAV_BOTTOM = [
+  { label: "Try Demo",   path: "/demo",     icon: Sparkles },
   { label: "Settings",   path: "/settings",  icon: Settings },
   { label: "Profile",    path: "/profile",   icon: User },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
+  "/payment":    "Payment & CBE Verification (50 ETB)",
   "/dashboard":  "Dashboard",
   "/courses":    "Courses",
   "/quizzes":    "AI Quiz",
   "/past-exams": "Past Exams",
   "/mock-exams": "Mock Exams",
   "/ai-study":   "AI Study Assistant",
+  "/gpe-exam":   "Graduate Profile Exam (GPE) Preparation",
+  "/exit-exam":  "National Exit Exam Hub",
   "/progress":   "My Progress",
   "/bookmarks":  "Bookmarks",
   "/feedback":   "Comments & Feedback Session",
   "/profile":    "Profile",
-  "/exit-exam":  "Exit Exam",
   "/4th-year":   "4th Year",
 };
 
@@ -51,6 +60,7 @@ export default function StudentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [yearName, setYearName] = useState<string>("Year");
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   // Auto-collapse on small screens
   useEffect(() => {
@@ -214,22 +224,34 @@ export default function StudentLayout() {
           collapsed && !isMobile ? "justify-center" : ""
         )}>
           <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-            {initials}
+            {user ? initials : "CS"}
           </div>
           {(!collapsed || isMobile) && (
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium truncate">{user?.full_name}</p>
-              <p className="text-2xs text-foreground-subtle truncate">{user?.email}</p>
+              <p className="text-xs font-medium truncate">{user?.full_name || "Guest Preview"}</p>
+              <p className="text-2xs text-foreground-subtle truncate">
+                {user ? user.email : "50 ETB Full Access"}
+              </p>
             </div>
           )}
           {(!collapsed || isMobile) && (
-            <button
-              onClick={handleLogout}
-              className="p-1.5 rounded hover:bg-muted text-foreground-subtle hover:text-destructive transition-colors"
-              aria-label="Sign out"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-            </button>
+            user ? (
+              <button
+                onClick={handleLogout}
+                className="p-1.5 rounded hover:bg-muted text-foreground-subtle hover:text-destructive transition-colors"
+                aria-label="Sign out"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="p-1.5 rounded hover:bg-muted text-primary transition-colors flex items-center gap-1 text-xs font-semibold"
+                title="Sign In"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+              </Link>
+            )
           )}
         </div>
       </div>
@@ -282,7 +304,28 @@ export default function StudentLayout() {
           <h2 className="text-sm font-semibold text-foreground flex-1 lg:text-base">{pageTitle}</h2>
 
           {/* Right side */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            {/* Pay 50 ETB Button if not paid */}
+            {(!user || !user.is_paid) && (
+              <Button
+                size="sm"
+                onClick={() => setPaymentModalOpen(true)}
+                className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 h-8 gap-1.5 shadow-sm border border-amber-500/40 animate-pulse"
+              >
+                <CreditCard className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Pay 50 ETB (CBE)</span>
+                <span className="sm:hidden">50 ETB</span>
+              </Button>
+            )}
+
+            {!user && (
+              <Link to="/login">
+                <Button size="sm" variant="outline" className="text-xs h-8">
+                  Sign In
+                </Button>
+              </Link>
+            )}
+
             <button className="p-1.5 rounded-full hover:bg-muted text-foreground-muted transition-colors">
               <Search className="h-4 w-4" />
             </button>
@@ -302,13 +345,14 @@ export default function StudentLayout() {
 
             {/* Avatar */}
             <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold ml-1">
-              {initials}
+              {user ? initials : "CS"}
             </div>
           </div>
         </header>
 
         {/* Page content */}
         <main className="flex-1 p-4 md:p-6 pb-16 lg:pb-0 animate-fade-up">
+          {location.pathname !== "/payment" && <PaywallBanner />}
           <Outlet />
         </main>
 
@@ -317,6 +361,8 @@ export default function StudentLayout() {
           Computer Science Wachemo University &middot; Developed by Nebiyu Mathewos
         </footer>
       </div>
+
+      <PaymentModal open={paymentModalOpen} onOpenChange={setPaymentModalOpen} />
 
       {/* ── Mobile bottom nav ─────────────────────── */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-20 bg-card border-t border-border flex no-print">

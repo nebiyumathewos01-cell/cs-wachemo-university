@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BookOpen, BookMarked, FileUp, FileText,
   Sparkles, Users, BarChart2, Settings, LogOut,
   Menu, X, Shield, ChevronLeft, ChevronRight, ClipboardList,
-  MessageSquare
+  MessageSquare, CreditCard
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn, getInitials } from "@/utils";
@@ -15,6 +15,12 @@ const NAV_GROUPS = [
     label: "Overview",
     items: [
       { label: "Dashboard",    path: "/admin",             icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Payments & Monetization",
+    items: [
+      { label: "Payments (50 ETB)", path: "/admin/payments", icon: CreditCard },
     ],
   },
   {
@@ -50,6 +56,7 @@ const NAV_GROUPS = [
 ];
 
 const PAGE_TITLES: Record<string, string> = {
+  "/admin/payments":  "Payment Verification & CBE Subscriptions (50 ETB)",
   "/admin/courses":   "Manage Courses",
   "/admin/chapters":  "Manage Chapters",
   "/admin/materials": "Manage Materials",

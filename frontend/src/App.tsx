@@ -16,6 +16,9 @@ import NotFoundPage from "@/components/common/NotFoundPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 
+// Public / Demo pages
+const DemoPage          = lazy(() => import("@/pages/public/DemoPage"));
+
 // Student pages (lazy for performance)
 const DashboardPage     = lazy(() => import("@/pages/student/DashboardPage"));
 const CoursesPage       = lazy(() => import("@/pages/student/CoursesPage"));
@@ -29,13 +32,16 @@ const ProgressPage      = lazy(() => import("@/pages/student/ProgressPage"));
 const BookmarksPage     = lazy(() => import("@/pages/student/BookmarksPage"));
 const ProfilePage       = lazy(() => import("@/pages/student/ProfilePage"));
 const StudentFeedbackPage = lazy(() => import("@/pages/student/StudentFeedbackPage"));
+const PaymentPage       = lazy(() => import("@/pages/student/PaymentPage"));
 
-// Coming Soon pages
+// Coming Soon & Special Exams pages
 const ExitExamPage   = lazy(() => import("@/pages/coming-soon/ExitExamPage"));
 const FourthYearPage = lazy(() => import("@/pages/coming-soon/FourthYearPage"));
+const GPEExamPage    = lazy(() => import("@/pages/student/GPEExamPage"));
 
 // Admin pages (lazy)
 const AdminDashboardPage  = lazy(() => import("@/pages/admin/AdminDashboardPage"));
+const AdminPaymentsPage   = lazy(() => import("@/pages/admin/AdminPaymentsPage"));
 const AdminCoursesPage    = lazy(() => import("@/pages/admin/AdminCoursesPage"));
 const AdminChaptersPage   = lazy(() => import("@/pages/admin/AdminChaptersPage"));
 const AdminMaterialsPage  = lazy(() => import("@/pages/admin/AdminMaterialsPage"));
@@ -104,8 +110,16 @@ function AppRoutes() {
         {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/demo" element={<DemoPage />} />
 
-        {/* ── Student ───────────────────────────────────────── */}
+        {/* ── Open Preview Routes (accessible to all, styled in StudentLayout) ── */}
+        <Route element={<StudentLayout />}>
+          <Route path="/exit-exam"             element={<ExitExamPage />} />
+          <Route path="/gpe-exam"              element={<GPEExamPage />} />
+          <Route path="/payment"               element={<PaymentPage />} />
+        </Route>
+
+        {/* ── Student Protected Routes ───────────────────────── */}
         <Route element={<ProtectedRoute requiredRole="student" />}>
           <Route element={<StudentLayout />}>
             <Route path="/dashboard"             element={<DashboardPage />} />
@@ -120,7 +134,6 @@ function AppRoutes() {
             <Route path="/bookmarks"             element={<BookmarksPage />} />
             <Route path="/profile"               element={<ProfilePage />} />
             <Route path="/feedback"              element={<StudentFeedbackPage />} />
-            <Route path="/exit-exam"             element={<ExitExamPage />} />
             <Route path="/4th-year"              element={<FourthYearPage />} />
           </Route>
         </Route>
@@ -129,6 +142,7 @@ function AppRoutes() {
         <Route element={<ProtectedRoute requiredRole="admin" />}>
           <Route element={<AdminLayout />}>
             <Route path="/admin"               element={<AdminDashboardPage />} />
+            <Route path="/admin/payments"      element={<AdminPaymentsPage />} />
             <Route path="/admin/courses"       element={<AdminCoursesPage />} />
             <Route path="/admin/chapters"      element={<AdminChaptersPage />} />
             <Route path="/admin/materials"     element={<AdminMaterialsPage />} />

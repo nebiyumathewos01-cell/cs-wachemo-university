@@ -51,6 +51,8 @@ class AdminUserOut(BaseModel):
     selected_year_id: Optional[int] = None
     quiz_attempts_count: int = 0
     is_active: bool
+    is_paid: bool = False
+    payment_status: str = "unpaid"
     created_at: str
 
     model_config = {"from_attributes": True}
@@ -70,3 +72,5 @@ class AnalyticsOut(BaseModel):
     total_materials: int
     total_past_exams: int
     total_quiz_attempts: int
+    pending_payments: int = 0
+    paid_students: int = 0

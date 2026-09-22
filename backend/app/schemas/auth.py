@@ -39,12 +39,15 @@ class UserOut(BaseModel):
     role: str
     selected_year_id: int | None
     is_active: bool
+    is_paid: bool = False
+    payment_status: str = "unpaid"
     created_at: str
 
     model_config = {"from_attributes": True}
 
     @classmethod
     def from_orm_obj(cls, user) -> "UserOut":
+        is_admin = (user.role.value if hasattr(user.role, "value") else user.role) == "admin"
         return cls(
             id=user.id,
             full_name=user.full_name,
@@ -53,6 +56,8 @@ class UserOut(BaseModel):
             role=user.role.value if hasattr(user.role, "value") else user.role,
             selected_year_id=user.selected_year_id,
             is_active=user.is_active,
+            is_paid=True if is_admin else getattr(user, "is_paid", False),
+            payment_status="approved" if is_admin else getattr(user, "payment_status", "unpaid"),
             created_at=user.created_at.isoformat(),
         )
 

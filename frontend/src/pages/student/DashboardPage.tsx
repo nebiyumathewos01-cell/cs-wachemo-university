@@ -6,7 +6,7 @@ import { progressApi } from "@/api/progress";
 import {
   BookOpen, ClipboardList, FileText, TrendingUp,
   Brain, GraduationCap, ArrowRight, ChevronRight,
-  Clock, Zap, PlayCircle
+  Clock, Zap, PlayCircle, Target,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,11 +44,13 @@ export default function DashboardPage() {
   const firstCourse = progress?.by_year?.[0]?.courses?.[0];
 
   const quickActions = [
+    { label: "GPE Exam Prep",     icon: Target,        path: "/gpe-exam",   color: "text-amber-600",  bg: "bg-amber-50" },
+    { label: "Exit Exam (MoE)",   icon: GraduationCap, path: "/exit-exam",  color: "text-orange-600", bg: "bg-orange-50" },
     { label: "Browse Courses",    icon: BookOpen,      path: "/courses",    color: "text-blue-600",   bg: "bg-blue-50" },
     { label: "AI Quiz",           icon: ClipboardList, path: "/quizzes",    color: "text-violet-600", bg: "bg-violet-50" },
     { label: "Past Exams",        icon: FileText,      path: "/past-exams", color: "text-emerald-600",bg: "bg-emerald-50" },
-    { label: "Mock Exam",         icon: GraduationCap, path: "/mock-exams", color: "text-orange-600", bg: "bg-orange-50" },
-    { label: "AI Study",          icon: Brain,         path: "/ai-study",   color: "text-indigo-600", bg: "bg-indigo-50" },
+    { label: "AI Study Assistant",icon: Brain,         path: "/ai-study",   color: "text-indigo-600", bg: "bg-indigo-50" },
+    { label: "Mock Exam",         icon: Clock,         path: "/mock-exams", color: "text-rose-600",   bg: "bg-rose-50" },
     { label: "My Progress",       icon: TrendingUp,    path: "/progress",   color: "text-teal-600",   bg: "bg-teal-50" },
   ];
 

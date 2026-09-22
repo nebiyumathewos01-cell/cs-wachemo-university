@@ -9,12 +9,15 @@ import {
   Edit2,
   Trash2,
   BookOpen,
-  Sparkles,
   CheckCircle2,
   XCircle,
-  Clock
+  Clock,
+  Lock,
+  Unlock,
+  Sparkles,
 } from "lucide-react";
 import { adminApi } from "@/api/admin";
+import { paymentApi } from "@/api/payments";
 import type { User } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -102,6 +105,25 @@ export default function AdminStudentsPage() {
       toast({
         title: "Action failed",
         description: "Could not update student status.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleTogglePayment = async (student: User) => {
+    try {
+      const res = await paymentApi.adminToggleStudentPayment(student.id);
+      setStudents(prev =>
+        prev.map(s => (s.id === student.id ? { ...s, is_paid: res.data.is_paid, payment_status: res.data.payment_status as any } : s))
+      );
+      toast({
+        title: res.data.is_paid ? "Access Granted (Paid)" : "Access Revoked (Unpaid)",
+        description: res.data.message,
+      });
+    } catch {
+      toast({
+        title: "Action failed",
+        description: "Could not update student payment status.",
         variant: "destructive",
       });
     }
@@ -293,7 +315,8 @@ export default function AdminStudentsPage() {
                   <th className="py-3.5 px-4 font-semibold">Email Address</th>
                   <th className="py-3.5 px-4 font-semibold">Academic Year</th>
                   <th className="py-3.5 px-4 font-semibold">Joined At</th>
-                  <th className="py-3.5 px-4 font-semibold">Status</th>
+                  <th className="py-3.5 px-4 font-semibold">Account</th>
+                  <th className="py-3.5 px-4 font-semibold">Payment Access</th>
                   <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
@@ -346,8 +369,36 @@ export default function AdminStudentsPage() {
                         </Badge>
                       )}
                     </td>
+                    <td className="py-3.5 px-4">
+                      {student.is_paid ? (
+                        <Badge className="bg-emerald-600 text-white border-none text-2xs gap-1 font-semibold">
+                          <CheckCircle2 className="h-3 w-3" /> Paid (50 ETB)
+                        </Badge>
+                      ) : student.payment_status === "pending" ? (
+                        <Badge className="bg-amber-500 text-white border-none text-2xs gap-1 font-semibold animate-pulse">
+                          <Clock className="h-3 w-3" /> Pending
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-purple-500/10 text-[#800080] dark:text-purple-300 border-purple-300 text-2xs gap-1 font-semibold">
+                          <Lock className="h-3 w-3" /> Unpaid
+                        </Badge>
+                      )}
+                    </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 px-2.5 text-xs ${student.is_paid ? "text-emerald-600 hover:bg-emerald-50" : "text-[#800080] hover:bg-purple-50"}`}
+                          onClick={() => handleTogglePayment(student)}
+                          title={student.is_paid ? "Revoke paid access" : "Grant full paid access (50 ETB)"}
+                        >
+                          {student.is_paid ? (
+                            <Unlock className="h-3.5 w-3.5" />
+                          ) : (
+                            <Lock className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -404,11 +455,18 @@ export default function AdminStudentsPage() {
                         </p>
                       </div>
                     </div>
-                    {student.is_active ? (
-                      <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-2xs">Active</Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 text-2xs">Inactive</Badge>
-                    )}
+                    <div className="flex flex-col items-end gap-1">
+                      {student.is_active ? (
+                        <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-2xs">Active</Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 text-2xs">Inactive</Badge>
+                      )}
+                      {student.is_paid ? (
+                        <Badge className="bg-emerald-600 text-white text-[10px]">Paid</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-purple-600 border-purple-300 text-[10px]">Unpaid</Badge>
+                      )}
+                    </div>
                   </div>
 
                   <div className="text-xs space-y-1 text-muted-foreground pt-1 border-t border-border">
@@ -419,7 +477,16 @@ export default function AdminStudentsPage() {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                  <div className="flex items-center justify-end gap-1.5 pt-2 border-t border-border flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs gap-1"
+                      onClick={() => handleTogglePayment(student)}
+                    >
+                      {student.is_paid ? <Unlock className="h-3.5 w-3.5 text-emerald-600" /> : <Lock className="h-3.5 w-3.5 text-purple-600" />}
+                      {student.is_paid ? "Revoke Access" : "Grant (50 ETB)"}
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

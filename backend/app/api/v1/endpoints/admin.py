@@ -18,12 +18,15 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 @router.get("/analytics", response_model=AnalyticsOut)
 def get_analytics(db: Session = Depends(get_db), _: User = Depends(get_current_admin)):
+    from app.models.payment import Payment
     return AnalyticsOut(
         total_students=db.query(func.count(User.id)).filter(User.role == UserRole.student).scalar() or 0,
         total_courses=db.query(func.count(Course.id)).scalar() or 0,
         total_materials=db.query(func.count(Material.id)).scalar() or 0,
         total_past_exams=db.query(func.count(PastExam.id)).scalar() or 0,
         total_quiz_attempts=db.query(func.count(QuizAttempt.id)).scalar() or 0,
+        pending_payments=db.query(func.count(Payment.id)).filter(Payment.status == "pending").scalar() or 0,
+        paid_students=db.query(func.count(User.id)).filter(User.role == UserRole.student, User.is_paid == True).scalar() or 0,
     )
 
 
@@ -58,6 +61,7 @@ def list_students(
     items = []
     for s in students:
         attempts_count = db.query(func.count(QuizAttempt.id)).filter(QuizAttempt.student_id == s.id).scalar() or 0
+        is_admin = s.role == UserRole.admin or (hasattr(s.role, "value") and s.role.value == "admin")
         items.append(
             AdminUserOut(
                 id=s.id,
@@ -69,6 +73,8 @@ def list_students(
                 selected_year_name=years.get(s.selected_year_id) if s.selected_year_id else None,
                 quiz_attempts_count=attempts_count,
                 is_active=s.is_active,
+                is_paid=True if is_admin else getattr(s, "is_paid", False),
+                payment_status="approved" if is_admin else getattr(s, "payment_status", "unpaid"),
                 created_at=s.created_at.isoformat(),
             )
         )

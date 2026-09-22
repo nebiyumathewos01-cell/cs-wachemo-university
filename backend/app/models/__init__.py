@@ -8,6 +8,7 @@ from app.models.progress import StudentProgress
 from app.models.bookmark import Bookmark
 from app.models.ai_log import AIGenerationLog
 from app.models.comment import Comment
+from app.models.payment import Payment
 
 __all__ = [
     "User",
@@ -20,4 +21,5 @@ __all__ = [
     "Bookmark",
     "AIGenerationLog",
     "Comment",
+    "Payment",
 ]

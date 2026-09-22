@@ -41,10 +41,12 @@ def _seed_database() -> None:
 
     db = SessionLocal()
     try:
-        # Check if username column exists in users table, add if missing
+        # Check if username and payment columns exist in users table, add if missing
         try:
             db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50);"))
             db.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username);"))
+            db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;"))
+            db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'unpaid';"))
             db.commit()
         except Exception as col_err:
             db.rollback()
@@ -63,6 +65,8 @@ def _seed_database() -> None:
                 hashed_password=hash_password(settings.ADMIN_PASSWORD),
                 role=UserRole.admin,
                 is_active=True,
+                is_paid=True,
+                payment_status="approved",
             )
             db.add(admin)
             db.flush()
@@ -75,6 +79,8 @@ def _seed_database() -> None:
             admin.hashed_password = hash_password(settings.ADMIN_PASSWORD)
             admin.role = UserRole.admin
             admin.is_active = True
+            admin.is_paid = True
+            admin.payment_status = "approved"
             db.flush()
             print(f"[SEED] Admin updated: username=Neba, email={settings.ADMIN_EMAIL}, password=CS3RD")
 

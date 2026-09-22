@@ -138,9 +138,9 @@ from app.schemas.material import (
 @router.post("/materials/ai-analyze-batch", response_model=AIAnalyzeBatchResponse)
 async def ai_analyze_batch_materials(
     files: list[UploadFile] = File(...),
-    academic_year_id: Optional[int] = Form(None),
-    semester_id: Optional[int] = Form(None),
-    course_id: Optional[int] = Form(None),
+    academic_year_id: Optional[str] = Form(None),
+    semester_id: Optional[str] = Form(None),
+    course_id: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_admin),
 ):
@@ -151,27 +151,55 @@ async def ai_analyze_batch_materials(
     if not files:
         raise HTTPException(status_code=400, detail="No files provided for analysis.")
 
+    # Parse optional IDs safely
+    parsed_year_id: Optional[int] = None
+    if academic_year_id and str(academic_year_id).strip() and str(academic_year_id).strip().lower() != "all":
+        try:
+            parsed_year_id = int(academic_year_id)
+        except ValueError:
+            parsed_year_id = None
+
+    parsed_sem_id: Optional[int] = None
+    if semester_id and str(semester_id).strip() and str(semester_id).strip().lower() != "all":
+        try:
+            parsed_sem_id = int(semester_id)
+        except ValueError:
+            parsed_sem_id = None
+
+    parsed_course_id: Optional[int] = None
+    if course_id and str(course_id).strip() and str(course_id).strip().lower() != "all":
+        try:
+            parsed_course_id = int(course_id)
+        except ValueError:
+            parsed_course_id = None
+
     analyzed_items = []
     for file in files:
-        # Save file to uploads
-        unique_filename, original_filename, file_size = await save_upload_file(file, "materials")
+        try:
+            # Save file to uploads
+            unique_filename, original_filename, file_size = await save_upload_file(file, "materials")
 
-        # Extract text from PDF if applicable
-        extracted_text = None
-        if original_filename.lower().endswith(".pdf"):
-            extracted_text = extract_text_from_pdf(unique_filename, "materials")
+            # Extract text from PDF if applicable
+            extracted_text = None
+            if original_filename.lower().endswith(".pdf"):
+                extracted_text = extract_text_from_pdf(unique_filename, "materials")
 
-        # Run AI Classifier Agent with year/semester guidance
-        analysis = analyze_material_with_agent(
-            filename=unique_filename,
-            original_filename=original_filename,
-            extracted_text=extracted_text,
-            db=db,
-            academic_year_id=academic_year_id,
-            semester_id=semester_id,
-            course_id=course_id,
-        )
-        analyzed_items.append(AIAnalyzedMaterial(**analysis))
+            # Run AI Classifier Agent with year/semester guidance
+            analysis = analyze_material_with_agent(
+                filename=unique_filename,
+                original_filename=original_filename,
+                extracted_text=extracted_text,
+                db=db,
+                academic_year_id=parsed_year_id,
+                semester_id=parsed_sem_id,
+                course_id=parsed_course_id,
+            )
+            analyzed_items.append(AIAnalyzedMaterial(**analysis))
+        except HTTPException as he:
+            raise he
+        except Exception as e:
+            print(f"[BATCH ANALYZE ERROR] Failed for file {getattr(file, 'filename', 'unknown')}: {e}")
+            raise HTTPException(status_code=400, detail=f"Failed to process '{getattr(file, 'filename', 'file')}': {str(e)}")
 
     return AIAnalyzeBatchResponse(
         items=analyzed_items,

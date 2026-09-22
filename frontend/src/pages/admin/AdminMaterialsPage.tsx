@@ -242,9 +242,11 @@ export default function AdminMaterialsPage() {
       setAiStage("review");
     } catch (err: any) {
       console.error(err);
+      const detail = err?.response?.data?.detail;
+      const errMsg = typeof detail === "string" ? detail : (Array.isArray(detail) ? detail.map((d: any) => d.msg || JSON.stringify(d)).join(", ") : err?.message);
       toast({
         title: "AI Analysis Failed",
-        description: err?.response?.data?.detail || "Could not analyze files. Check your network or file format (PDF, PPT, DOCX).",
+        description: errMsg || "Could not analyze files. Check your network or file format (PDF, PPT, DOCX).",
         variant: "destructive",
       });
       setAiStage("setup_and_upload");

@@ -306,6 +306,7 @@ def analyze_material_with_agent(
     llm_result = None
     if settings.GEMINI_API_KEY:
         try:
+            genai.configure(api_key=settings.GEMINI_API_KEY)
             model = genai.GenerativeModel("gemini-1.5-flash")
             text_preview = (extracted_text or "")[:3500]
             

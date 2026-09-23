@@ -389,11 +389,239 @@ def _seed_database() -> None:
 
         db.commit()
         print("[SEED] Wachemo CS curriculum courses and standard chapters seeded successfully")
+
+        # Seed initial coding problems
+        _seed_coding_problems(db)
+
     except Exception as e:
         db.rollback()
         print(f"[SEED ERROR] {e}")
     finally:
         db.close()
+
+
+def _seed_coding_problems(db) -> None:
+    from app.models.coding import CodingProblem
+
+    if db.query(CodingProblem).count() > 0:
+        return
+
+    problems = [
+        {
+            "title": "Two Sum",
+            "slug": "two-sum",
+            "difficulty": "Easy",
+            "category": "Arrays",
+            "points": 10,
+            "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.",
+            "constraints": "• 2 <= nums.length <= 10^4\n• -10^9 <= nums[i] <= 10^9\n• Only one valid answer exists.",
+            "examples": [
+                {"input": "[2, 7, 11, 15]\n9", "output": "[0, 1]", "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."},
+                {"input": "[3, 2, 4]\n6", "output": "[1, 2]", "explanation": "nums[1] + nums[2] == 6, return [1, 2]."}
+            ],
+            "test_cases": [
+                {"input": "[2, 7, 11, 15]\n9", "expected_output": "[0, 1]"},
+                {"input": "[3, 2, 4]\n6", "expected_output": "[1, 2]"},
+                {"input": "[3, 3]\n6", "expected_output": "[0, 1]"}
+            ],
+            "starter_code": {
+                "python": "def two_sum(nums, target):\n    # Write your solution here\n    seen = {}\n    for i, num in enumerate(nums):\n        diff = target - num\n        if diff in seen:\n            return [seen[diff], i]\n        seen[num] = i\n    return []\n",
+                "cpp": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Your C++ code\n        return {0, 1};\n    }\n};",
+                "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Your Java code\n        return new int[]{0, 1};\n    }\n}",
+                "javascript": "function twoSum(nums, target) {\n    // Your JavaScript code\n    const seen = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const diff = target - nums[i];\n        if (seen.has(diff)) return [seen.get(diff), i];\n        seen.set(nums[i], i);\n    }\n    return [];\n}"
+            }
+        },
+        {
+            "title": "Valid Palindrome",
+            "slug": "valid-palindrome",
+            "difficulty": "Easy",
+            "category": "Strings",
+            "points": 10,
+            "description": "A phrase is a **palindrome** if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.",
+            "constraints": "• 1 <= s.length <= 2 * 10^5\n• s consists only of printable ASCII characters.",
+            "examples": [
+                {"input": "\"A man, a plan, a canal: Panama\"", "output": "true", "explanation": "\"amanaplanacanalpanama\" is a palindrome."},
+                {"input": "\"race a car\"", "output": "false", "explanation": "\"raceacar\" is not a palindrome."}
+            ],
+            "test_cases": [
+                {"input": "\"A man, a plan, a canal: Panama\"", "expected_output": "true"},
+                {"input": "\"race a car\"", "expected_output": "false"},
+                {"input": "\" \"", "expected_output": "true"}
+            ],
+            "starter_code": {
+                "python": "def is_palindrome(s):\n    filtered = [ch.lower() for ch in s if ch.isalnum()]\n    return filtered == filtered[::-1]\n",
+                "cpp": "class Solution {\npublic:\n    bool isPalindrome(string s) {\n        return true;\n    }\n};",
+                "java": "class Solution {\n    public boolean isPalindrome(String s) {\n        return true;\n    }\n}",
+                "javascript": "function isPalindrome(s) {\n    const clean = s.toLowerCase().replace(/[^a-z0-9]/g, '');\n    return clean === clean.split('').reverse().join('');\n}"
+            }
+        },
+        {
+            "title": "Valid Parentheses",
+            "slug": "valid-parentheses",
+            "difficulty": "Easy",
+            "category": "Stacks & Queues",
+            "points": 10,
+            "description": "Given a string `s` containing just the characters `'('`, `')'`, `'{'`, `'}'`, `'['` and `']'`, determine if the input string is valid.\n\nAn input string is valid if open brackets are closed by the same type of brackets and in the correct order.",
+            "constraints": "• 1 <= s.length <= 10^4\n• s consists of parentheses only '()[]{}'.",
+            "examples": [
+                {"input": "\"()[]{}\"", "output": "true"},
+                {"input": "\"(]\"", "output": "false"}
+            ],
+            "test_cases": [
+                {"input": "\"()[]{}\"", "expected_output": "true"},
+                {"input": "\"(]\"", "expected_output": "false"},
+                {"input": "\"{[]}\"", "expected_output": "true"}
+            ],
+            "starter_code": {
+                "python": "def is_valid(s):\n    stack = []\n    mapping = {')': '(', '}': '{', ']': '['}\n    for char in s:\n        if char in mapping:\n            top = stack.pop() if stack else '#'\n            if mapping[char] != top:\n                return False\n        else:\n            stack.append(char)\n    return not stack\n",
+                "cpp": "bool isValid(string s) { return true; }",
+                "java": "public boolean isValid(String s) { return true; }",
+                "javascript": "function isValid(s) { return true; }"
+            }
+        },
+        {
+            "title": "Reverse Singly Linked List",
+            "slug": "reverse-linked-list",
+            "difficulty": "Medium",
+            "category": "Linked Lists",
+            "points": 20,
+            "description": "Given the head of a singly linked list represented as an array of values, reverse the list and return the reversed list array.",
+            "constraints": "• 0 <= Number of nodes <= 5000\n• -5000 <= Node.val <= 5000",
+            "examples": [
+                {"input": "[1, 2, 3, 4, 5]", "output": "[5, 4, 3, 2, 1]"},
+                {"input": "[1, 2]", "output": "[2, 1]"}
+            ],
+            "test_cases": [
+                {"input": "[1, 2, 3, 4, 5]", "expected_output": "[5, 4, 3, 2, 1]"},
+                {"input": "[1, 2]", "expected_output": "[2, 1]"}
+            ],
+            "starter_code": {
+                "python": "def reverse_list(head):\n    return head[::-1]\n",
+                "cpp": "vector<int> reverseList(vector<int> head) { reverse(head.begin(), head.end()); return head; }",
+                "java": "public int[] reverseList(int[] head) { return head; }",
+                "javascript": "function reverseList(head) { return head.reverse(); }"
+            }
+        },
+        {
+            "title": "Binary Search",
+            "slug": "binary-search",
+            "difficulty": "Easy",
+            "category": "Searching & Sorting",
+            "points": 10,
+            "description": "Given an array of integers `nums` which is sorted in ascending order, and an integer `target`, write a function to search `target` in `nums`. If `target` exists, then return its index. Otherwise, return `-1`.",
+            "constraints": "• 1 <= nums.length <= 10^4\n• All integers in nums are unique.\n• nums is sorted in ascending order.",
+            "examples": [
+                {"input": "[-1, 0, 3, 5, 9, 12]\n9", "output": "4"},
+                {"input": "[-1, 0, 3, 5, 9, 12]\n2", "output": "-1"}
+            ],
+            "test_cases": [
+                {"input": "[-1, 0, 3, 5, 9, 12]\n9", "expected_output": "4"},
+                {"input": "[-1, 0, 3, 5, 9, 12]\n2", "expected_output": "-1"}
+            ],
+            "starter_code": {
+                "python": "def search(nums, target):\n    left, right = 0, len(nums) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if nums[mid] == target:\n            return mid\n        elif nums[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1\n",
+                "cpp": "int search(vector<int>& nums, int target) { return -1; }",
+                "java": "public int search(int[] nums, int target) { return -1; }",
+                "javascript": "function search(nums, target) { return -1; }"
+            }
+        },
+        {
+            "title": "Maximum Depth of Binary Tree",
+            "slug": "max-depth-binary-tree",
+            "difficulty": "Easy",
+            "category": "Trees",
+            "points": 10,
+            "description": "Given the root representation of a binary tree as an array, return its maximum depth.",
+            "constraints": "• 0 <= Tree nodes <= 10^4",
+            "examples": [
+                {"input": "[3, 9, 20, null, null, 15, 7]", "output": "3"}
+            ],
+            "test_cases": [
+                {"input": "[3, 9, 20, null, null, 15, 7]", "expected_output": "3"}
+            ],
+            "starter_code": {
+                "python": "def max_depth(root):\n    if not root:\n        return 0\n    return 3\n",
+                "cpp": "int maxDepth(TreeNode* root) { return 3; }",
+                "java": "public int maxDepth(TreeNode root) { return 3; }",
+                "javascript": "function maxDepth(root) { return 3; }"
+            }
+        },
+        {
+            "title": "Climbing Stairs (Fibonacci DP)",
+            "slug": "climbing-stairs",
+            "difficulty": "Easy",
+            "category": "Dynamic Programming",
+            "points": 10,
+            "description": "You are climbing a staircase. It takes `n` steps to reach the top.\n\nEach time you can either climb `1` or `2` steps. In how many distinct ways can you climb to the top?",
+            "constraints": "• 1 <= n <= 45",
+            "examples": [
+                {"input": "2", "output": "2", "explanation": "1. 1 step + 1 step\n2. 2 steps"},
+                {"input": "3", "output": "3", "explanation": "1. 1+1+1\n2. 1+2\n3. 2+1"}
+            ],
+            "test_cases": [
+                {"input": "2", "expected_output": "2"},
+                {"input": "3", "expected_output": "3"},
+                {"input": "5", "expected_output": "8"}
+            ],
+            "starter_code": {
+                "python": "def climb_stairs(n):\n    if n <= 2:\n        return n\n    a, b = 1, 2\n    for _ in range(3, n + 1):\n        a, b = b, a + b\n    return b\n",
+                "cpp": "int climbStairs(int n) { return n; }",
+                "java": "public int climbStairs(int n) { return n; }",
+                "javascript": "function climbStairs(n) { return n; }"
+            }
+        },
+        {
+            "title": "Factorial Calculation",
+            "slug": "factorial-recursion",
+            "difficulty": "Easy",
+            "category": "Recursion",
+            "points": 10,
+            "description": "Write a recursive function to compute the factorial of a given non-negative integer `n`.",
+            "constraints": "• 0 <= n <= 12",
+            "examples": [
+                {"input": "5", "output": "120"},
+                {"input": "0", "output": "1"}
+            ],
+            "test_cases": [
+                {"input": "5", "expected_output": "120"},
+                {"input": "0", "expected_output": "1"},
+                {"input": "4", "expected_output": "24"}
+            ],
+            "starter_code": {
+                "python": "def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n",
+                "cpp": "int factorial(int n) { return 1; }",
+                "java": "public int factorial(int n) { return 1; }",
+                "javascript": "function factorial(n) { return 1; }"
+            }
+        },
+        {
+            "title": "Select High-Earning Employees",
+            "slug": "sql-high-earners",
+            "difficulty": "Easy",
+            "category": "SQL",
+            "points": 10,
+            "description": "Write an SQL query to select all employee names from the `employees` table who earn a salary greater than 50000.",
+            "constraints": "• Standard SQL query expected.",
+            "examples": [
+                {"input": "employees table", "output": "SELECT name FROM employees WHERE salary > 50000;"}
+            ],
+            "test_cases": [
+                {"input": "SELECT name FROM employees WHERE salary > 50000;", "expected_output": "SELECT name FROM employees WHERE salary > 50000;"}
+            ],
+            "starter_code": {
+                "python": "def sql_query():\n    return 'SELECT name FROM employees WHERE salary > 50000;'\n",
+                "cpp": "string sqlQuery() { return \"SELECT name FROM employees WHERE salary > 50000;\"; }",
+                "java": "public String sqlQuery() { return \"SELECT name FROM employees WHERE salary > 50000;\"; }",
+                "javascript": "function sqlQuery() { return 'SELECT name FROM employees WHERE salary > 50000;'; }"
+            }
+        }
+    ]
+
+    for p in problems:
+        cp = CodingProblem(**p)
+        db.add(cp)
+    db.commit()
+    print(f"[SEED] Initialized {len(problems)} coding practice problems!")
 
 
 def create_app() -> FastAPI:

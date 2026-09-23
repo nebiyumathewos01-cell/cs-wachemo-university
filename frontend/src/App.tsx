@@ -33,6 +33,8 @@ const BookmarksPage     = lazy(() => import("@/pages/student/BookmarksPage"));
 const ProfilePage       = lazy(() => import("@/pages/student/ProfilePage"));
 const StudentFeedbackPage = lazy(() => import("@/pages/student/StudentFeedbackPage"));
 const PaymentPage       = lazy(() => import("@/pages/student/PaymentPage"));
+const CodingPracticePage = lazy(() => import("@/pages/student/CodingPracticePage"));
+const CodingProblemDetailPage = lazy(() => import("@/pages/student/CodingProblemDetailPage"));
 
 // Coming Soon & Special Exams pages
 const ExitExamPage   = lazy(() => import("@/pages/coming-soon/ExitExamPage"));
@@ -128,6 +130,8 @@ function AppRoutes() {
             <Route path="/mock-exams"            element={<MockExamsPage />} />
             <Route path="/past-exams"            element={<PastExamsPage />} />
             <Route path="/ai-study"              element={<AIStudyPage />} />
+            <Route path="/coding"                element={<CodingPracticePage />} />
+            <Route path="/coding/:problemId"     element={<CodingProblemDetailPage />} />
             <Route path="/progress"              element={<ProgressPage />} />
             <Route path="/bookmarks"             element={<BookmarksPage />} />
             <Route path="/profile"               element={<ProfilePage />} />

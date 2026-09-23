@@ -5,7 +5,7 @@ import {
   Brain, TrendingUp, Bookmark, User, LogOut,
   Menu, X, GraduationCap, Clock, ChevronLeft,
   ChevronRight, Bell, Search, Settings, MessageSquare,
-  CreditCard, Sparkles, LogIn
+  CreditCard, Sparkles, LogIn, Code2
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn, getInitials } from "@/utils";
@@ -19,6 +19,7 @@ import PaymentModal from "@/components/payment/PaymentModal";
 const NAV_MAIN = [
   { label: "Dashboard",       path: "/dashboard",   icon: LayoutDashboard },
   { label: "Courses",         path: "/courses",     icon: BookOpen },
+  { label: "Coding Practice", path: "/coding",      icon: Code2 },
   { label: "Quizzes",         path: "/quizzes",     icon: ClipboardList },
   { label: "Past Exams",      path: "/past-exams",  icon: FileText },
   { label: "Mock Exams",      path: "/mock-exams",  icon: GraduationCap },
@@ -39,6 +40,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/payment":    "Payment & CBE Verification (50 ETB)",
   "/dashboard":  "Dashboard",
   "/courses":    "Courses",
+  "/coding":     "Coding Practice",
   "/quizzes":    "AI Quiz",
   "/past-exams": "Past Exams",
   "/mock-exams": "Mock Exams",

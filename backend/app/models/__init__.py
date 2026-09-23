@@ -9,6 +9,7 @@ from app.models.bookmark import Bookmark
 from app.models.ai_log import AIGenerationLog
 from app.models.comment import Comment
 from app.models.payment import Payment
+from app.models.coding import CodingProblem, CodingSubmission
 
 __all__ = [
     "User",
@@ -22,4 +23,5 @@ __all__ = [
     "AIGenerationLog",
     "Comment",
     "Payment",
+    "CodingProblem", "CodingSubmission",
 ]

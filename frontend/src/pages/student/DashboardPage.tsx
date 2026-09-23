@@ -6,7 +6,7 @@ import { progressApi } from "@/api/progress";
 import {
   BookOpen, ClipboardList, FileText, TrendingUp,
   Brain, GraduationCap, ArrowRight, ChevronRight,
-  Clock, Zap, PlayCircle,
+  Clock, Zap, PlayCircle, Code2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ export default function DashboardPage() {
 
   const quickActions = [
     { label: "Exit Exam (MoE)",   icon: GraduationCap, path: "/exit-exam",  color: "text-orange-600", bg: "bg-orange-50" },
+    { label: "Coding Practice",  icon: Code2,         path: "/coding",     color: "text-purple-600", bg: "bg-purple-50" },
     { label: "Browse Courses",    icon: BookOpen,      path: "/courses",    color: "text-blue-600",   bg: "bg-blue-50" },
     { label: "AI Quiz",           icon: ClipboardList, path: "/quizzes",    color: "text-violet-600", bg: "bg-violet-50" },
     { label: "Past Exams",        icon: FileText,      path: "/past-exams", color: "text-emerald-600",bg: "bg-emerald-50" },

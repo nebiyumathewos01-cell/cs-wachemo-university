@@ -107,12 +107,12 @@ export default function CodingProblemDetailPage() {
     }
   };
 
-  const handleExplainWithAI = async () => {
+  const handleExplainWithAI = async (mode: string = "solution") => {
     if (!problemId) return;
     setAiLoading(true);
     setActiveLeftTab("ai-assistant");
     try {
-      const res = await codingApi.explainWithAI(Number(problemId), { language, code });
+      const res = await codingApi.explainWithAI(Number(problemId), { language: "cpp", code, mode });
       setAiExplanation(res.data.explanation);
     } catch {
       toast({ title: "AI Error", description: "Failed to generate AI explanation.", variant: "destructive" });
@@ -152,7 +152,7 @@ export default function CodingProblemDetailPage() {
         </div>
 
         <Button
-          onClick={handleExplainWithAI}
+          onClick={() => handleExplainWithAI("solution")}
           disabled={aiLoading}
           className="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs h-8 gap-1.5 shadow-sm"
         >
@@ -253,11 +253,65 @@ export default function CodingProblemDetailPage() {
 
           {/* AI Assistant Explanation Content */}
           {activeLeftTab === "ai-assistant" && (
-            <div className="flex-1 overflow-auto p-5 m-0 space-y-4">
+            <div className="flex-1 overflow-auto p-4 m-0 space-y-4">
+              {/* Learning Modes Bar */}
+              <div className="space-y-1.5 bg-muted/40 p-3 rounded-xl border border-border">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-purple-600" /> Choose AI Learning Mode
+                </p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleExplainWithAI("hint")}
+                    disabled={aiLoading}
+                    className="text-[11px] h-7 px-2.5 bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20"
+                  >
+                    💡 Hint
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleExplainWithAI("concept")}
+                    disabled={aiLoading}
+                    className="text-[11px] h-7 px-2.5 bg-blue-500/10 text-blue-600 dark:text-blue-300 border-blue-500/30 hover:bg-blue-500/20"
+                  >
+                    📖 Concept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleExplainWithAI("approach")}
+                    disabled={aiLoading}
+                    className="text-[11px] h-7 px-2.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/20"
+                  >
+                    🚀 Approach
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleExplainWithAI("solution")}
+                    disabled={aiLoading}
+                    className="text-[11px] h-7 px-2.5 bg-purple-600 text-white hover:bg-purple-700"
+                  >
+                    📝 Solution
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleExplainWithAI("explain-code")}
+                    disabled={aiLoading}
+                    className="text-[11px] h-7 px-2.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20"
+                  >
+                    🔍 Explain My Code
+                  </Button>
+                </div>
+              </div>
+
               {aiLoading ? (
                 <div className="flex flex-col items-center justify-center p-12 space-y-3">
                   <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
-                  <p className="text-xs font-medium text-muted-foreground">Generating step-by-step AI explanation...</p>
+                  <p className="text-xs font-medium text-muted-foreground">Generating step-by-step C++ AI explanation...</p>
                 </div>
               ) : aiExplanation ? (
                 <div className="prose dark:prose-invert prose-sm text-xs max-w-none leading-relaxed">
@@ -266,13 +320,10 @@ export default function CodingProblemDetailPage() {
               ) : (
                 <div className="text-center py-12 space-y-3">
                   <Sparkles className="h-10 w-10 text-purple-600 mx-auto" />
-                  <h4 className="text-sm font-bold">Deep AI Solution Guide</h4>
+                  <h4 className="text-sm font-bold">Deep C++ AI Solution Guide</h4>
                   <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                    Click "Explain with AI" above to receive a beginner-friendly walkthrough, complexity analysis, and line-by-line explanation.
+                    Select a mode above or click "Explain with AI" to receive a beginner-friendly C++ walkthrough, complexity analysis, and line-by-line explanation.
                   </p>
-                  <Button size="sm" onClick={handleExplainWithAI} className="bg-purple-600 text-white text-xs">
-                    Generate AI Explanation
-                  </Button>
                 </div>
               )}
             </div>

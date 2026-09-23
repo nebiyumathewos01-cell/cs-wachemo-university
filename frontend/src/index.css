@@ -96,41 +96,41 @@
   }
 
   .dark {
-    --background:        220 24% 9%;
-    --surface:           220 22% 12%;
-    --surface-raised:    220 20% 15%;
-    --border:            220 14% 22%;
-    --border-strong:     220 12% 30%;
+    --background:        222 47% 7%;   /* #0b0f19 */
+    --surface:           222 35% 10%;  /* #111726 */
+    --surface-raised:    222 30% 14%;  /* #182033 */
+    --border:            222 25% 18%;  /* #212c45 */
+    --border-strong:     222 25% 26%;
 
-    --foreground:        210 20% 95%;
-    --foreground-muted:  210 12% 60%;
-    --foreground-subtle: 210 10% 46%;
+    --foreground:        210 40% 98%;
+    --foreground-muted:  215 20% 65%;
+    --foreground-subtle: 215 16% 50%;
 
-    --primary:           220 75% 60%;
-    --primary-hover:     220 72% 68%;
-    --primary-foreground: 220 76% 10%;
-    --primary-subtle:    220 30% 18%;
-    --primary-muted:     220 40% 28%;
+    --primary:           263 70% 58%;  /* #8b5cf6 LeetCode purple accent */
+    --primary-hover:     263 75% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-subtle:    263 40% 16%;
+    --primary-muted:     263 30% 25%;
 
-    --secondary:         220 14% 22%;
-    --secondary-foreground: 210 20% 85%;
+    --secondary:         222 25% 16%;
+    --secondary-foreground: 210 30% 90%;
 
-    --muted:             220 14% 20%;
-    --muted-foreground:  210 12% 55%;
+    --muted:             222 25% 14%;
+    --muted-foreground:  215 20% 60%;
 
-    --card:              220 22% 12%;
-    --card-foreground:   210 20% 95%;
-    --popover:           220 22% 12%;
-    --popover-foreground: 210 20% 95%;
+    --card:              222 35% 11%;
+    --card-foreground:   210 40% 98%;
+    --popover:           222 35% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    --input:             220 14% 22%;
+    --input:             222 25% 18%;
 
-    --info:              220 70% 65%;
-    --info-subtle:       220 30% 18%;
+    --info:              217 91% 60%;
+    --info-subtle:       217 40% 16%;
 
-    --destructive-subtle: 0 40% 18%;
-    --success-subtle:    142 30% 18%;
-    --warning-subtle:    38 40% 18%;
+    --destructive-subtle: 0 50% 16%;
+    --success-subtle:    142 50% 16%;
+    --warning-subtle:    38 50% 16%;
   }
 }
 

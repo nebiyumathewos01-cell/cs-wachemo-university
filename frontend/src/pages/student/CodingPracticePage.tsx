@@ -14,20 +14,26 @@ import PageHeader from "@/components/common/PageHeader";
 import { StatsSkeleton } from "@/components/common/Skeleton";
 
 const CATEGORIES = [
-  "All Categories",
-  "Programming Fundamentals",
+  "All Topics",
+  "Fundamentals",
+  "Variables",
+  "Conditions",
+  "Loops",
+  "Functions",
   "Arrays",
   "Strings",
-  "Functions",
-  "Recursion",
+  "Pointers",
   "OOP",
+  "Recursion",
+  "Searching",
+  "Sorting",
   "Linked Lists",
-  "Stacks & Queues",
-  "Searching & Sorting",
+  "Stacks",
+  "Queues",
   "Trees",
   "Graphs",
-  "Dynamic Programming",
-  "SQL",
+  "Data Structures",
+  "Algorithms",
 ];
 
 export default function CodingPracticePage() {
@@ -36,7 +42,7 @@ export default function CodingPracticePage() {
   const [loading, setLoading] = useState(true);
 
   // Filters
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [selectedCategory, setSelectedCategory] = useState("All Topics");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,7 +56,7 @@ export default function CodingPracticePage() {
     try {
       const [probsRes, statsRes] = await Promise.all([
         codingApi.getProblems({
-          category: selectedCategory === "All Categories" ? undefined : selectedCategory,
+          category: selectedCategory === "All Topics" ? undefined : selectedCategory,
           difficulty: selectedDifficulty === "All" ? undefined : selectedDifficulty,
           status_filter: selectedStatus === "All" ? undefined : selectedStatus.toLowerCase(),
         }),
@@ -87,7 +93,7 @@ export default function CodingPracticePage() {
     <div className="max-w-6xl mx-auto pb-24 lg:pb-8 space-y-6">
       <PageHeader
         title="Coding Practice Platform"
-        description="Master Computer Science problem-solving with hands-on coding challenges and real-time AI feedback."
+        description="Practice C++ programming, data structures, and computer science problem-solving with real-time feedback."
       />
 
       {/* Progress & Stats Bar */}

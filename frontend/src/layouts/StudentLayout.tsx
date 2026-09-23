@@ -36,23 +36,6 @@ const NAV_BOTTOM = [
   { label: "Profile",    path: "/profile",   icon: User },
 ];
 
-const PAGE_TITLES: Record<string, string> = {
-  "/payment":    "Payment & CBE Verification (50 ETB)",
-  "/dashboard":  "Dashboard",
-  "/courses":    "Courses",
-  "/coding":     "Coding Practice",
-  "/quizzes":    "AI Quiz",
-  "/past-exams": "Past Exams",
-  "/mock-exams": "Mock Exams",
-  "/ai-study":   "AI Study Assistant",
-  "/exit-exam":  "National Exit Exam Hub",
-  "/progress":   "My Progress",
-  "/bookmarks":  "Bookmarks",
-  "/feedback":   "Comments & Feedback Session",
-  "/profile":    "Profile",
-  "/4th-year":   "4th Year",
-};
-
 export default function StudentLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -88,10 +71,6 @@ export default function StudentLayout() {
   useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
 
   const handleLogout = async () => { await logout(); navigate("/login"); };
-
-  const pageTitle = Object.entries(PAGE_TITLES).find(([k]) =>
-    location.pathname.startsWith(k)
-  )?.[1] ?? "CS Wachemo";
 
   const initials = getInitials(user?.full_name, "CS");
 
@@ -300,11 +279,48 @@ export default function StudentLayout() {
             <Menu className="h-5 w-5" />
           </button>
 
-          {/* Page title */}
-          <h2 className="text-sm font-semibold text-foreground flex-1 lg:text-base">{pageTitle}</h2>
+          {/* Page title / Top Navigation Links */}
+          <div className="flex items-center gap-4 flex-1 overflow-x-auto scrollbar-none">
+            <Link to="/dashboard" className="flex items-center gap-2 text-xs font-bold text-foreground hover:text-purple-400 shrink-0">
+              <span className="text-purple-500 font-mono text-sm">CS</span> Wachemo
+            </Link>
+            <div className="h-4 w-px bg-border hidden md:block shrink-0" />
+            <div className="hidden md:flex items-center gap-1 text-xs font-medium text-muted-foreground shrink-0">
+              <NavLink to="/courses" className={({ isActive }) => cn("px-2.5 py-1 rounded-md transition-colors hover:text-foreground", isActive && "text-purple-400 font-semibold bg-purple-500/10")}>
+                Explore
+              </NavLink>
+              <NavLink to="/coding" className={({ isActive }) => cn("px-2.5 py-1 rounded-md transition-colors hover:text-foreground", isActive && "text-purple-400 font-semibold bg-purple-500/10")}>
+                Problems
+              </NavLink>
+              <NavLink to="/courses" className={({ isActive }) => cn("px-2.5 py-1 rounded-md transition-colors hover:text-foreground", isActive && "text-purple-400 font-semibold bg-purple-500/10")}>
+                Courses
+              </NavLink>
+              <NavLink to="/coding" className={({ isActive }) => cn("px-2.5 py-1 rounded-md transition-colors hover:text-foreground", isActive && "text-purple-400 font-semibold bg-purple-500/10")}>
+                Practice
+              </NavLink>
+              <NavLink to="/exit-exam" className={({ isActive }) => cn("px-2.5 py-1 rounded-md transition-colors hover:text-foreground", isActive && "text-purple-400 font-semibold bg-purple-500/10")}>
+                Exit Exam
+              </NavLink>
+              <NavLink to="/ai-study" className={({ isActive }) => cn("px-2.5 py-1 rounded-md transition-colors hover:text-foreground", isActive && "text-purple-400 font-semibold bg-purple-500/10")}>
+                AI Study
+              </NavLink>
+              <NavLink to="/progress" className={({ isActive }) => cn("px-2.5 py-1 rounded-md transition-colors hover:text-foreground", isActive && "text-purple-400 font-semibold bg-purple-500/10")}>
+                Progress
+              </NavLink>
+            </div>
+          </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Search Input */}
+            <div className="relative hidden lg:block w-48">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search CS Wachemo..."
+                className="w-full bg-muted/40 border border-border rounded-lg pl-8 pr-3 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-purple-500"
+              />
+            </div>
             {/* Pay 50 ETB Button if not paid */}
             {(!user || !user.is_paid) && (
               <Button

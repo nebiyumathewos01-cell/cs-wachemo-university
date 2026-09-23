@@ -69,7 +69,7 @@ export const codingApi = {
   submitCode: (id: number, data: { language: string; code: string }) =>
     apiClient.post<CodingSubmitResponse>(`/coding/problems/${id}/submit`, data),
 
-  explainWithAI: (id: number, data: { language?: string; code?: string }) =>
+  explainWithAI: (id: number, data: { language?: string; code?: string; mode?: string }) =>
     apiClient.post<{ explanation: string }>(`/coding/problems/${id}/explain-ai`, data),
 
   getUserStats: () =>

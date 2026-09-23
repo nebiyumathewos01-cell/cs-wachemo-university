@@ -80,8 +80,9 @@ class CodingSubmitResponse(BaseModel):
 
 
 class AIExplainRequest(BaseModel):
-    language: Optional[str] = "python"
+    language: Optional[str] = "cpp"
     code: Optional[str] = None
+    mode: Optional[str] = "solution"  # hint, concept, approach, solution, explain-code
 
 
 class AIExplainResponse(BaseModel):

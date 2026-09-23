@@ -365,7 +365,22 @@ def explain_coding_problem_ai(
     if not p:
         raise HTTPException(status_code=404, detail="Coding problem not found.")
 
-    # Try generating explanation via Google Gemini API if installed
+    mode = (req.mode or "solution").lower()
+    lang = req.language or "cpp"
+    student_code = req.code or "None provided"
+
+    # Build prompt according to student learning mode
+    if mode == "hint":
+        prompt_instruction = "Provide 2-3 progressive hints to help the student figure out the solution on their own. DO NOT give away the complete code answer."
+    elif mode == "concept":
+        prompt_instruction = f"Explain the underlying Computer Science concept ({p.category}) deeply, including memory layout, pointers/iterators, and practical usage in C++."
+    elif mode == "approach":
+        prompt_instruction = "Provide the logical step-by-step algorithm approach and pseudo-code. Explain WHY this approach is optimal before writing code."
+    elif mode == "explain-code":
+        prompt_instruction = f"Analyze the student's C++ code snippet:\n```cpp\n{student_code}\n```\nPoint out syntax issues, logical bugs, edge cases, and performance improvements step by step."
+    else:  # mode == "solution"
+        prompt_instruction = f"Provide a complete, deep 20-point educational guide in C++, including problem analysis, step-by-step algorithm, line-by-line C++ explanation, dry run, time/space complexity O(N), common mistakes, and alternative approach."
+
     explanation_md = None
     try:
         import google.generativeai as genai
@@ -374,8 +389,8 @@ def explain_coding_problem_ai(
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel("gemini-2.5-flash")
             prompt = f"""
-You are a master Computer Science professor and coding mentor at Wachemo University.
-Provide a deep, beginner-friendly, step-by-step educational guide for this coding problem:
+You are a senior Computer Science professor and C++ coding mentor at Wachemo University.
+Target Student Goal: {prompt_instruction}
 
 Problem Title: {p.title}
 Difficulty: {p.difficulty}
@@ -383,33 +398,12 @@ Category: {p.category}
 Description: {p.description}
 Constraints: {p.constraints}
 
-Student's current code ({req.language or 'python'}):
-{req.code or 'None provided'}
+Student's C++ Code:
+```cpp
+{student_code}
+```
 
-Structure your response clearly with these exact Markdown headers:
-### 🎯 What the Problem Is Asking
-Explain the core requirement in simple English for beginners.
-
-### 💡 Intuition & Thought Process
-How should a student break down this problem logically?
-
-### 🚀 Step-by-Step Algorithm Approach
-1. Step 1...
-2. Step 2...
-3. Step 3...
-
-### ⏱️ Time & Space Complexity Analysis
-- **Time Complexity:** O(...) with step-by-step justification.
-- **Space Complexity:** O(...) with step-by-step justification.
-
-### 📝 Line-by-Line Code Solution & Explanation
-Provide clean, idiomatic solution code in {req.language or 'python'} and explain key lines.
-
-### ⚠️ Common Beginner Pitfalls & Mistakes
-What off-by-one errors, null checks, or edge cases do students make?
-
-### 🔄 Simpler or Alternative Approach
-Is there a brute-force or alternative way to solve it?
+Format your answer with clear Markdown headings, bullet points, and syntax-highlighted C++ code blocks. Keep explanations deep, beginner-friendly, and educational.
 """
             res = model.generate_content(prompt)
             explanation_md = res.text
@@ -417,57 +411,67 @@ Is there a brute-force or alternative way to solve it?
         print(f"[AI EXPLAIN NOTE] {gemini_err}")
 
     if not explanation_md:
-        # Structured fallback explanation
-        explanation_md = f"""### 🎯 What the Problem Is Asking
-The objective of **{p.title}** is to take the given input data structure, process it according to the requirements, and return the correct result.
+        if mode == "hint":
+            explanation_md = f"### 💡 Progressive Hints for {p.title}\n\n1. **Hint 1**: Think about how elements in `{p.category}` are stored in memory.\n2. **Hint 2**: Consider using a pointer or hash map to keep track of previous values.\n3. **Hint 3**: Try walking through Example 1 manually on paper!"
+        elif mode == "concept":
+            explanation_md = f"### 📖 Deep Concept Breakdown: {p.category}\n\nIn C++, `{p.category}` is a fundamental concept. Memory is allocated sequentially or dynamically via pointers. Understanding how references and memory addresses operate ensures efficient $O(1)$ or $O(N)$ operations."
+        elif mode == "approach":
+            explanation_md = f"### 🚀 Step-by-Step Algorithm Approach\n\n1. **Initialization**: Declare variables and pointers.\n2. **Traversal**: Loop through data structures sequentially.\n3. **Condition Check**: Evaluate target criteria.\n4. **Return Result**: Return indices or computed value."
+        elif mode == "explain-code":
+            explanation_md = f"### 🔍 Code Analysis for Your C++ Submission\n\n```cpp\n{student_code}\n```\n\n- **Syntax Verification**: Ensure all headers (`<vector>`, `<unordered_map>`) are included.\n- **Boundary Checks**: Verify loop indices do not cause out-of-bounds array access.\n- **Return Value**: Confirm return types match function signatures."
+        else:
+            explanation_md = f"""### 🎯 1. What the Problem Is Asking
+The objective of **{p.title}** is to process input structures using C++ and return the correct result.
 
 ---
 
-### 💡 Intuition & Thought Process
-When tackling **{p.title}** in **{p.category}**:
-1. **Understand Inputs & Outputs**: Identify input constraints and expected return formats.
-2. **Identify Patterns**: Recognize standard algorithms and data structures suitable for {p.category}.
-3. **Trace Examples**: Walk through sample inputs manually on paper.
+### 💡 2. Intuition & Thought Process
+1. **Understand Inputs & Outputs**: Identify constraints and return types.
+2. **Identify C++ Data Structures**: Use `std::vector`, `std::unordered_map`, or pointers.
 
 ---
 
-### 🚀 Step-by-Step Algorithm Approach
-1. **Initialize Data Structures**: Prepare pointers, dynamic arrays, or tracking variables.
-2. **Iterate & Compute**: Loop through input elements and perform checks.
-3. **Handle Edge Cases**: Ensure boundary conditions (empty input, single element) yield correct output.
+### 🚀 3. Step-by-Step Algorithm
+1. Declare state variables.
+2. Loop over inputs.
+3. Compare values and update solution.
 
 ---
 
-### ⏱️ Time & Space Complexity Analysis
-- **Time Complexity:** $\\mathcal{{O}}(N)$ — Traversing elements in linear time.
-- **Space Complexity:** $\\mathcal{{O}}(1)$ — Using constant extra memory space.
+### ⏱️ 4. Time & Space Complexity Analysis
+- **Time Complexity:** $\\mathcal{{O}}(N)$ — Single pass iteration.
+- **Space Complexity:** $\\mathcal{{O}}(1)$ — Auxiliary space.
 
 ---
 
-### 📝 Line-by-Line Code Solution ({req.language or 'python'})
-```python
-def solution(nums):
-    # Step 1: Handle base cases
-    if not nums:
-        return []
-    
-    # Step 2: Main processing loop
-    res = []
-    for item in nums:
-        res.append(item)
-    return res
+### 📝 5. Complete C++ Solution Code
+```cpp
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+using namespace std;
+
+class Solution {{
+public:
+    vector<int> solution(vector<int>& nums, int target) {{
+        unordered_map<int, int> seen;
+        for (int i = 0; i < nums.size(); i++) {{
+            int diff = target - nums[i];
+            if (seen.count(diff)) {{
+                return {{seen[diff], i}};
+            }}
+            seen[nums[i]] = i;
+        }}
+        return {{}};
+    }}
+}};
 ```
 
 ---
 
-### ⚠️ Common Beginner Pitfalls & Mistakes
-- Forgetting edge cases like empty lists or arrays of length 1.
-- Not updating index variables inside `while` loops causing infinite execution.
-
----
-
-### 🔄 Simpler or Alternative Approach
-For small inputs, a simple linear scan or nested loop can verify correctness before optimizing to logarithmic or linear time!
+### ⚠️ 6. Common Beginner Pitfalls & Mistakes
+- Forgetting `#include` header files.
+- Index out of bounds in zero-indexed vectors.
 """
 
     return AIExplainResponse(explanation=explanation_md)

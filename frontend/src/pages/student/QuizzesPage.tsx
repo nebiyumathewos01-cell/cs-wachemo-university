@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Brain, Loader2, AlertCircle, ChevronLeft, ChevronRight, CheckCircle2, XCircle, TrendingUp, RotateCcw } from "lucide-react";
-import { academicApi, coursesApi, chaptersApi } from "@/api/academic";
+import { Brain, Loader2, AlertCircle, ChevronLeft, ChevronRight, CheckCircle2, XCircle, RotateCcw, Sparkles, BookOpen, FileText, Target } from "lucide-react";
+import { academicApi, coursesApi, chaptersApi, materialsApi } from "@/api/academic";
 import { quizApi } from "@/api/quiz";
-import type { AcademicYear, Semester, Course, Chapter, Quiz, Difficulty, QuizResult } from "@/types";
+import type { AcademicYear, Semester, Course, Chapter, Material, Quiz, Difficulty, QuizResult } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -17,24 +17,34 @@ import { useToast } from "@/hooks/useToast";
 type Step = "setup" | "generating" | "quiz" | "submitting" | "results";
 
 const DIFFICULTIES: { value: Difficulty; label: string; desc: string }[] = [
-  { value: "easy",          label: "Easy",         desc: "Basic recall" },
-  { value: "medium",        label: "Medium",       desc: "Application" },
-  { value: "hard",          label: "Hard",         desc: "Analysis" },
+  { value: "easy",          label: "Easy",         desc: "Definitions & basics" },
+  { value: "medium",        label: "Medium",       desc: "Application & logic" },
+  { value: "hard",          label: "Hard",         desc: "Deep analysis & cases" },
   { value: "exam_practice", label: "Exam Practice",desc: "University exam level" },
 ];
 
 export default function QuizzesPage() {
   const [params] = useSearchParams();
+  const urlMaterialId = params.get("material");
+  const urlCourseId = params.get("course");
+  const urlChapterId = params.get("chapter");
+
   const [years, setYears] = useState<AcademicYear[]>([]);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
+
   const [selYear, setSelYear] = useState("");
   const [selSem, setSelSem] = useState("");
-  const [selCourse, setSelCourse] = useState(params.get("course") ?? "");
-  const [selChapter, setSelChapter] = useState(params.get("chapter") ?? "");
+  const [selCourse, setSelCourse] = useState(urlCourseId ?? "");
+  const [selChapter, setSelChapter] = useState(urlChapterId ?? "");
+  const [selMaterial, setSelMaterial] = useState(urlMaterialId ?? "all");
+
   const [numQ, setNumQ] = useState("10");
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+  const [questionType, setQuestionType] = useState<string>("all");
+
   const [setupError, setSetupError] = useState("");
   const [step, setStep] = useState<Step>("setup");
   const [genStatus, setGenStatus] = useState("");
@@ -51,11 +61,36 @@ export default function QuizzesPage() {
   const [isSemestersLoading, setIsSemestersLoading] = useState(false);
   const [isCoursesLoading, setIsCoursesLoading] = useState(false);
   const [isChaptersLoading, setIsChaptersLoading] = useState(false);
+  const [isMaterialsLoading, setIsMaterialsLoading] = useState(false);
 
-  useEffect(() => { academicApi.getYears().then(r => setYears(r.data)); }, []);
+  useEffect(() => { 
+    academicApi.getYears().then(r => setYears(r.data)); 
+  }, []);
+
+  // Handle URL pre-fill
+  useEffect(() => {
+    if (urlChapterId) {
+      loadChapterMaterials(Number(urlChapterId));
+    }
+  }, [urlChapterId]);
+
+  const loadChapterMaterials = async (chId: number) => {
+    setIsMaterialsLoading(true);
+    try {
+      const res = await materialsApi.getMaterialsByChapter(chId);
+      setMaterials(res.data);
+      if (urlMaterialId) {
+        setSelMaterial(urlMaterialId);
+      }
+    } catch {
+      // Ignore
+    } finally {
+      setIsMaterialsLoading(false);
+    }
+  };
 
   const onYearChange = async (v: string) => {
-    setSelYear(v); setSelSem(""); setSelCourse(""); setSelChapter("");
+    setSelYear(v); setSelSem(""); setSelCourse(""); setSelChapter(""); setSelMaterial("all"); setMaterials([]);
     setIsSemestersLoading(true);
     setIsCoursesLoading(true);
     try {
@@ -71,7 +106,7 @@ export default function QuizzesPage() {
   };
 
   const onSemChange = async (v: string) => {
-    setSelSem(v); setSelCourse(""); setSelChapter("");
+    setSelSem(v); setSelCourse(""); setSelChapter(""); setSelMaterial("all"); setMaterials([]);
     setIsCoursesLoading(true);
     try {
       const r = await coursesApi.getCourses({ academic_year_id: Number(selYear), semester_id: Number(v), per_page: 100 } as Parameters<typeof coursesApi.getCourses>[0]);
@@ -84,6 +119,8 @@ export default function QuizzesPage() {
   const onCourseChange = async (v: string) => {
     setSelCourse(v); 
     setSelChapter("all");
+    setSelMaterial("all");
+    setMaterials([]);
     setIsChaptersLoading(true);
     try {
       const r = await chaptersApi.getChapters(Number(v));
@@ -93,17 +130,29 @@ export default function QuizzesPage() {
     }
   };
 
+  const onChapterChange = async (v: string) => {
+    setSelChapter(v);
+    setSelMaterial("all");
+    if (v !== "all") {
+      loadChapterMaterials(Number(v));
+    } else {
+      setMaterials([]);
+    }
+  };
+
   const handleGenerate = async () => {
-    if (!selYear || !selSem || !selCourse) {
-      setSetupError("Please select year, semester, and course."); 
-      return;
+    if (!selMaterial || selMaterial === "all") {
+      if (!selYear || !selSem || !selCourse) {
+        setSetupError("Please select an academic year, semester, and course."); 
+        return;
+      }
     }
     setSetupError(""); setStep("generating");
     const genSteps = [
-      "Analyzing course & chapter materials…",
-      "Retrieving relevant content…",
-      "Generating questions…",
-      "Validating questions…",
+      "Reading selected study material…",
+      "Analyzing core principles, definitions & algorithms…",
+      "Generating grounded questions strictly from content…",
+      "Validating answer correctness & explanations…",
     ];
     let i = 0;
     setGenStatus(genSteps[0]);
@@ -112,15 +161,28 @@ export default function QuizzesPage() {
       setGenStatus(genSteps[i]);
     }, 900);
     try {
-      const chId = selChapter && selChapter !== "all" ? Number(selChapter) : null;
-      const qr = await quizApi.generateQuiz({ 
-        academic_year_id: Number(selYear), 
-        semester_id: Number(selSem), 
-        course_id: Number(selCourse), 
-        chapter_id: chId, 
-        num_questions: Number(numQ), 
-        difficulty 
-      });
+      let qr;
+      if (selMaterial && selMaterial !== "all") {
+        // Material-grounded Quiz Generation
+        qr = await quizApi.generateMaterialQuiz({
+          material_id: Number(selMaterial),
+          num_questions: Number(numQ),
+          difficulty,
+          question_type: questionType,
+        });
+      } else {
+        // Course/Chapter Level Quiz Generation
+        const chId = selChapter && selChapter !== "all" ? Number(selChapter) : null;
+        qr = await quizApi.generateQuiz({ 
+          academic_year_id: Number(selYear || 1), 
+          semester_id: Number(selSem || 1), 
+          course_id: Number(selCourse), 
+          chapter_id: chId, 
+          num_questions: Number(numQ), 
+          difficulty 
+        });
+      }
+
       clearInterval(interval);
       const ar = await quizApi.startQuiz(qr.data.id);
       setQuiz(qr.data); setAttemptId(ar.data.id);
@@ -201,10 +263,10 @@ export default function QuizzesPage() {
               <SelectContent>{courses.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Chapter / Topic</Label>
-              <Select value={selChapter} onValueChange={setSelChapter} disabled={!selCourse || isChaptersLoading}>
+              <Select value={selChapter} onValueChange={onChapterChange} disabled={!selCourse || isChaptersLoading}>
                 <SelectTrigger><SelectValue placeholder={isChaptersLoading ? "Loading..." : "Select chapter"} /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">✨ All Chapters / Whole Course</SelectItem>
@@ -212,32 +274,82 @@ export default function QuizzesPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Study Material Selector (Strict Grounding) */}
             <div className="space-y-1.5">
-              <Label>Questions</Label>
+              <Label className="flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5 text-[#ff6633]" />
+                <span>Target Study Material</span>
+              </Label>
+              <Select value={selMaterial} onValueChange={setSelMaterial} disabled={selChapter === "all" || isMaterialsLoading}>
+                <SelectTrigger className="truncate"><SelectValue placeholder={isMaterialsLoading ? "Loading materials..." : "All Chapter Content"} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">📚 All Materials in Chapter</SelectItem>
+                  {materials.map(m => (
+                    <SelectItem key={m.id} value={String(m.id)}>
+                      📄 {m.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Number of Questions</Label>
               <Select value={numQ} onValueChange={setNumQ}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{[5,10,15,20,30].map(n => <SelectItem key={n} value={String(n)}>{n} questions</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  <SelectItem value="5">⚡ 5 Questions (Quick Check)</SelectItem>
+                  <SelectItem value="10">🎯 10 Questions (Standard Quiz)</SelectItem>
+                  <SelectItem value="15">📝 15 Questions (Deep Practice)</SelectItem>
+                  <SelectItem value="20">🏆 20 Questions (Mastery Exam)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Question Format</Label>
+              <Select value={questionType} onValueChange={setQuestionType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">✨ Multiple Choice &amp; True/False (Mixed)</SelectItem>
+                  <SelectItem value="mcq">🔘 Multiple Choice Only (4 Choices)</SelectItem>
+                  <SelectItem value="true_false">⚖️ True / False Only</SelectItem>
+                </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Difficulty</Label>
+            <Label>Difficulty Level</Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {DIFFICULTIES.map(d => (
                 <button key={d.value} onClick={() => setDifficulty(d.value)}
                   className={cn("rounded-lg border p-2.5 text-left transition-all",
-                    difficulty === d.value ? "border-primary bg-primary-subtle" : "border-border hover:border-border-strong"
+                    difficulty === d.value ? "border-[#ff6633] bg-[#ff6633]/10 dark:bg-[#ff6633]/15 shadow-xs" : "border-border hover:border-border-strong"
                   )}>
-                  <p className={cn("text-xs font-semibold", difficulty === d.value ? "text-primary" : "text-foreground")}>{d.label}</p>
-                  <p className="text-2xs text-foreground-subtle mt-0.5">{d.desc}</p>
+                  <p className={cn("text-xs font-bold", difficulty === d.value ? "text-[#ff6633]" : "text-foreground")}>{d.label}</p>
+                  <p className="text-2xs text-muted-foreground mt-0.5">{d.desc}</p>
                 </button>
               ))}
             </div>
           </div>
 
-          <Button className="w-full gap-2" size="lg" onClick={handleGenerate}>
-            <Brain className="h-4 w-4" />Generate Quiz with AI
+          {selMaterial && selMaterial !== "all" && (
+            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 shrink-0 text-purple-600 dark:text-purple-400" />
+              <span><strong>Strict Material Grounding:</strong> AI will generate questions strictly and solely from the selected document.</span>
+            </div>
+          )}
+
+          <Button 
+            className="w-full gap-2 bg-gradient-to-r from-[#ff6633] to-[#e65526] hover:from-[#e65526] hover:to-[#d0451a] text-white font-bold shadow-md shadow-[#ff6633]/20" 
+            size="lg" 
+            onClick={handleGenerate}
+          >
+            <Sparkles className="h-4 w-4" />Generate Material Quiz with AI
           </Button>
         </CardContent>
       </Card>
@@ -397,19 +509,99 @@ export default function QuizzesPage() {
           <Progress value={result.score} className="mt-5 h-2" />
         </div>
 
-        {/* Recommendations */}
-        {result.recommendations && result.recommendations.length > 0 && (
-          <div className="rounded-xl bg-primary-subtle border border-primary/20 p-4">
-            <p className="font-semibold text-sm text-primary flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4" />Recommendations
+        {/* ══════════════════════════════════════════════════════════════
+            AGENTIC AI LEARNING FEEDBACK & STUDY RECOMMENDATIONS
+            ══════════════════════════════════════════════════════════════ */}
+        <div className="rounded-2xl border border-purple-500/30 bg-card p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2.5 pb-2 border-b border-border">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-xs">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-foreground">Agentic AI Performance Diagnosis</h3>
+              <p className="text-2xs text-muted-foreground">Personalized evaluation grounded in your quiz responses</p>
+            </div>
+          </div>
+
+          {/* AI Summary Quote */}
+          <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/40 text-xs text-purple-950 dark:text-purple-100 leading-relaxed font-medium">
+            🧠 {result.ai_feedback?.performance_summary || "Good effort! Review the weak topics below to solidify your understanding of this material."}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+            {/* Strengths */}
+            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-2">
+              <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Concepts Mastered</span>
+              </p>
+              <ul className="space-y-1 text-2xs text-foreground/90">
+                {(result.ai_feedback?.strengths && result.ai_feedback.strengths.length > 0
+                  ? result.ai_feedback.strengths
+                  : ["Core principles tested in this quiz"]
+                ).map((s, i) => (
+                  <li key={i} className="flex items-start gap-1.5">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
+                    <span>{s}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Weak Areas */}
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 space-y-2">
+              <p className="text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
+                <XCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                <span>Concepts Needing Practice</span>
+              </p>
+              <ul className="space-y-1 text-2xs text-foreground/90">
+                {(result.ai_feedback?.weak_topics && result.ai_feedback.weak_topics.length > 0
+                  ? result.ai_feedback.weak_topics
+                  : (result.weak_topics && result.weak_topics.length > 0 ? result.weak_topics : ["No significant weaknesses found!"])
+                ).map((w, i) => (
+                  <li key={i} className="flex items-start gap-1.5">
+                    <span className="text-rose-600 dark:text-rose-400 font-bold">!</span>
+                    <span>{w}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Targeted Material Review Sections */}
+          {result.ai_feedback?.review_sections && result.ai_feedback.review_sections.length > 0 && (
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1.5">
+              <p className="text-xs font-bold text-amber-800 dark:text-amber-200 flex items-center gap-1.5">
+                <BookOpen className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                <span>Recommended Material Sections to Re-read</span>
+              </p>
+              <div className="space-y-1 text-2xs text-amber-950 dark:text-amber-100">
+                {result.ai_feedback.review_sections.map((sec, i) => (
+                  <p key={i} className="flex items-start gap-1.5">
+                    <span>📖</span>
+                    <span>{sec}</span>
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Actionable Next Steps */}
+          <div className="p-3.5 rounded-xl bg-muted/60 border border-border space-y-1.5">
+            <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <Target className="h-3.5 w-3.5 text-[#ff6633]" />
+              <span>Next Steps &amp; Recommendations</span>
             </p>
-            <div className="space-y-1">
-              {result.recommendations.map((r, i) => (
-                <p key={i} className="text-xs text-primary/80 flex gap-2"><span>•</span>{r}</p>
+            <div className="space-y-1 text-2xs text-muted-foreground">
+              {(result.ai_feedback?.recommendations || result.recommendations || []).map((r, i) => (
+                <p key={i} className="flex items-start gap-1.5">
+                  <span className="text-[#ff6633] font-bold">→</span>
+                  <span>{r}</span>
+                </p>
               ))}
             </div>
           </div>
-        )}
+        </div>
 
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">

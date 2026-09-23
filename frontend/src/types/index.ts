@@ -248,6 +248,7 @@ export interface Quiz {
   chapter_id: number | null;
   course_id: number;
   academic_year_id: number;
+  material_id?: number | null;
   difficulty: Difficulty;
   question_count: number;
   questions?: Question[];
@@ -282,6 +283,15 @@ export interface QuizAnswerReview {
   correct_option_id?: number | null;
 }
 
+export interface AILearningFeedback {
+  performance_summary: string;
+  strengths: string[];
+  weak_topics: string[];
+  review_sections: string[];
+  recommendations: string[];
+  practice_tips: string[];
+}
+
 export interface QuizResult {
   attempt_id: number;
   score: number;
@@ -291,6 +301,14 @@ export interface QuizResult {
   answers: QuizAnswerReview[];
   weak_topics: string[];
   recommendations: string[];
+  ai_feedback?: AILearningFeedback;
+}
+
+export interface GenerateMaterialQuizRequest {
+  material_id: number;
+  num_questions: number;
+  difficulty: string;
+  question_type: string;
 }
 
 // ============================================================

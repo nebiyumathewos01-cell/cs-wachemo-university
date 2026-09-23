@@ -32,6 +32,7 @@ class QuizOut(BaseModel):
     chapter_id: Optional[int]
     course_id: int
     academic_year_id: int
+    material_id: Optional[int] = None
     difficulty: str
     question_count: int
     is_mock_exam: bool
@@ -49,6 +50,20 @@ class GenerateQuizRequest(BaseModel):
     chapter_id: Optional[int] = None
     num_questions: int
     difficulty: Difficulty
+
+    @field_validator("num_questions")
+    @classmethod
+    def validate_count(cls, v: int) -> int:
+        if not 1 <= v <= 50:
+            raise ValueError("Number of questions must be between 1 and 50")
+        return v
+
+
+class GenerateMaterialQuizRequest(BaseModel):
+    material_id: int
+    num_questions: int = 10
+    difficulty: str = "medium"       # "easy", "medium", "hard", "mixed"
+    question_type: str = "mcq"       # "mcq", "true_false", "all"
 
     @field_validator("num_questions")
     @classmethod
@@ -92,6 +107,15 @@ class AnswerResult(BaseModel):
     correct_option_id: Optional[int]
 
 
+class AILearningFeedback(BaseModel):
+    performance_summary: str
+    strengths: List[str] = []
+    weak_topics: List[str] = []
+    review_sections: List[str] = []
+    recommendations: List[str] = []
+    practice_tips: List[str] = []
+
+
 class QuizResult(BaseModel):
     attempt_id: int
     score: float
@@ -101,6 +125,7 @@ class QuizResult(BaseModel):
     answers: List[AnswerResult]
     weak_topics: List[str]
     recommendations: List[str]
+    ai_feedback: Optional[AILearningFeedback] = None
 
 
 class QuizAttemptOut(BaseModel):

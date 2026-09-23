@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, AlertCircle, FileText, ClipboardList, Brain, Lightbulb, BookOpen } from "lucide-react";
+import { ArrowLeft, AlertCircle, FileText, ClipboardList, Brain, Lightbulb, BookOpen, Sparkles } from "lucide-react";
 import { chaptersApi, materialsApi } from "@/api/academic";
 import type { Chapter, Material } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -118,15 +118,28 @@ export default function ChapterDetailPage() {
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="shrink-0 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white font-medium"
-                      onClick={() => handleOpenViewer(m)}
-                    >
-                      <BookOpen className="h-3.5 w-3.5" />
-                      View Material
-                    </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 font-semibold text-xs border-purple-500/30 hover:bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                        onClick={() => handleOpenViewer(m)}
+                      >
+                        <BookOpen className="h-3.5 w-3.5" />
+                        Study Material
+                      </Button>
+                      <Button
+                        asChild
+                        variant="default"
+                        size="sm"
+                        className="gap-1.5 bg-gradient-to-r from-[#ff6633] to-[#e65526] hover:from-[#e65526] hover:to-[#d0451a] text-white font-bold text-xs shadow-xs"
+                      >
+                        <Link to={`/quizzes?material=${m.id}&course=${m.course_id}&chapter=${m.chapter_id}`}>
+                          <Sparkles className="h-3.5 w-3.5" />
+                          Take Quiz
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

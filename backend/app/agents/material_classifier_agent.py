@@ -130,10 +130,32 @@ STANDARD_CS_CURRICULUM = {
         "aliases": ["industrial practice", "industrial practicd", "internship", "field practice", "cosc312"]
     },
 
-    # ─── 4th Year / Exit Exam ───────────────────────────────────
-    "Exit Exam Preparation": {
+    # ─── 4th Year 1st Semester ──────────────────────────────────
+    "Compiler Design": {
         "year": "4th Year", "sem": "Semester I",
-        "aliases": ["exit exam preparation", "exit exam", "national exit exam", "national exam", "exit practice", "comprehensive"]
+        "aliases": ["compiler design", "compiler", "lexical analysis", "syntax analysis", "parsing", "intermediate code", "code generation", "cosc401"]
+    },
+    "Computer and Network Security": {
+        "year": "4th Year", "sem": "Semester I",
+        "aliases": ["computer security", "network security", "information security", "cryptography", "cyber security", "ciphers", "rsa", "firewall", "cosc403"]
+    },
+    "Distributed Systems": {
+        "year": "4th Year", "sem": "Semester I",
+        "aliases": ["distributed systems", "distributed system", "rpc", "rmi", "cloud computing", "replication", "consensus", "cosc405"]
+    },
+    "Research Methods in Computer Science": {
+        "year": "4th Year", "sem": "Semester I",
+        "aliases": ["research methods", "research methodology", "scientific writing", "cosc407"]
+    },
+
+    # ─── 4th Year 2nd Semester & Exit Exam ──────────────────────
+    "Exit Exam Preparation": {
+        "year": "4th Year", "sem": "Semester II",
+        "aliases": ["exit exam preparation", "exit exam", "national exit exam", "national exam", "exit practice", "comprehensive", "gpe"]
+    },
+    "Final Year Project": {
+        "year": "4th Year", "sem": "Semester II",
+        "aliases": ["final project", "senior project", "capstone project", "graduation project", "cosc410"]
     },
 }
 

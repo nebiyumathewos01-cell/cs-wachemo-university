@@ -20,6 +20,7 @@ class Quiz(Base):
     chapter_id = Column(Integer, ForeignKey("chapters.id", ondelete="SET NULL"), nullable=True, index=True)
     course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True)
     academic_year_id = Column(Integer, ForeignKey("academic_years.id", ondelete="CASCADE"), nullable=False, index=True)
+    material_id = Column(Integer, ForeignKey("materials.id", ondelete="SET NULL"), nullable=True, index=True)
     difficulty = Column(SAEnum(Difficulty), nullable=False, default=Difficulty.medium)
     question_count = Column(Integer, nullable=False, default=10)
     is_mock_exam = Column(Boolean, default=False, nullable=False)
@@ -27,6 +28,7 @@ class Quiz(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Relationships
+    material = relationship("Material")
     quiz_questions = relationship("QuizQuestion", back_populates="quiz", cascade="all, delete-orphan")
     attempts = relationship("QuizAttempt", back_populates="quiz")
 

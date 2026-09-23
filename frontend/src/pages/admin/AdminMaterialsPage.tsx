@@ -648,10 +648,17 @@ export default function AdminMaterialsPage() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             {originalAnalysis && (
-                              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-3xs gap-1">
-                                <Sparkles className="h-2.5 w-2.5" />
-                                {Math.round((originalAnalysis.confidence || 0.9) * 100)}% Match
-                              </Badge>
+                              (originalAnalysis.confidence || 0.9) >= 0.75 ? (
+                                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-3xs gap-1 font-semibold">
+                                  <Sparkles className="h-2.5 w-2.5" />
+                                  {Math.round((originalAnalysis.confidence || 0.9) * 100)}% Match
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 text-3xs gap-1 font-bold">
+                                  <AlertCircle className="h-2.5 w-2.5" />
+                                  ⚠️ Needs Review ({Math.round((originalAnalysis.confidence || 0.6) * 100)}%)
+                                </Badge>
+                              )
                             )}
                             {originalAnalysis?.is_new_course && (
                               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-3xs">

@@ -16,10 +16,12 @@ from app.models.quiz import Quiz, QuizQuestion, QuizAttempt, StudentAnswer, Quiz
 from app.models.progress import StudentProgress
 from app.models.ai_log import AIGenerationLog
 from app.models.user import User
-from app.agents.quiz_agent import generate_quiz, answer_study_question
+from app.models.academic import Chapter, Course
+from app.models.material import Material
+from app.agents.quiz_agent import generate_quiz, generate_material_quiz, answer_study_question, analyze_student_performance
 from app.schemas.quiz import (
-    GenerateQuizRequest, MockExamRequest, QuizSubmitRequest,
-    QuizOut, QuizAttemptOut, QuizResult, AnswerResult,
+    GenerateQuizRequest, GenerateMaterialQuizRequest, MockExamRequest, QuizSubmitRequest,
+    QuizOut, QuizAttemptOut, QuizResult, AnswerResult, AILearningFeedback,
     QuestionOut, QuestionOptionOut,
     StudyRequest, StudyResponse,
 )
@@ -158,6 +160,124 @@ def api_generate_quiz(
         id=quiz.id, title=quiz.title,
         chapter_id=quiz.chapter_id, course_id=quiz.course_id,
         academic_year_id=quiz.academic_year_id,
+        material_id=quiz.material_id,
+        difficulty=quiz.difficulty.value,
+        question_count=quiz.question_count,
+        is_mock_exam=quiz.is_mock_exam,
+        time_limit_minutes=quiz.time_limit_minutes,
+        questions=questions_with_opts,
+        created_at=quiz.created_at.isoformat(),
+    )
+
+
+@router.post("/ai/generate-material-quiz", response_model=QuizOut, status_code=status.HTTP_201_CREATED)
+def api_generate_material_quiz(
+    data: GenerateMaterialQuizRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_student),
+):
+    start_time = time.time()
+    mat = db.query(Material).filter(Material.id == data.material_id).first()
+    if not mat:
+        raise HTTPException(status_code=404, detail="Material not found")
+
+    chapter = db.query(Chapter).filter(Chapter.id == mat.chapter_id).first() if mat.chapter_id else None
+    course = db.query(Course).filter(Course.id == mat.course_id).first() if mat.course_id else None
+    academic_year_id = course.academic_year_id if course else 1
+
+    validated_questions, gen_status = generate_material_quiz(
+        material_id=data.material_id,
+        num_questions=data.num_questions,
+        difficulty=data.difficulty,
+        question_type=data.question_type,
+        db=db,
+    )
+
+    if not validated_questions:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Unable to generate quiz from this material right now. Please try again.",
+        )
+
+    # Resolve difficulty enum
+    diff_enum = Difficulty.medium
+    try:
+        if data.difficulty in ["easy", "medium", "hard", "exam_practice"]:
+            diff_enum = Difficulty(data.difficulty)
+    except Exception:
+        pass
+
+    quiz_title = f"Material Quiz — {mat.title} ({data.difficulty.title()})"
+    quiz = Quiz(
+        title=quiz_title,
+        chapter_id=mat.chapter_id,
+        course_id=mat.course_id,
+        academic_year_id=academic_year_id,
+        material_id=mat.id,
+        difficulty=diff_enum,
+        question_count=len(validated_questions),
+    )
+    db.add(quiz)
+    db.flush()
+
+    question_outs = []
+    for order, q_data in enumerate(validated_questions):
+        q = Question(
+            text=q_data["text"],
+            question_type="mcq" if len(q_data["options"]) > 2 else "true_false",
+            difficulty=diff_enum,
+            explanation=q_data.get("explanation"),
+            chapter_id=mat.chapter_id,
+            course_id=mat.course_id,
+            is_ai_generated=True,
+            is_approved=True,
+        )
+        db.add(q)
+        db.flush()
+
+        for opt in q_data["options"]:
+            option = QuestionOption(
+                question_id=q.id,
+                label=opt["label"],
+                text=opt["text"],
+                is_correct=(opt["label"] == q_data["correct_label"]),
+            )
+            db.add(option)
+
+        db.flush()
+        db.refresh(q)
+
+        qq = QuizQuestion(quiz_id=quiz.id, question_id=q.id, order=order)
+        db.add(qq)
+        question_outs.append(q)
+
+    # Log success
+    log = AIGenerationLog(
+        student_id=current_user.id,
+        quiz_id=quiz.id,
+        academic_year_id=academic_year_id,
+        course_id=mat.course_id,
+        chapter_id=mat.chapter_id,
+        questions_requested=data.num_questions,
+        questions_generated=len(validated_questions),
+        questions_validated=len(validated_questions),
+        status="success",
+        duration_seconds=round(time.time() - start_time, 2),
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(quiz)
+
+    questions_with_opts = []
+    for q in question_outs:
+        db.refresh(q)
+        questions_with_opts.append(_question_to_out(q, include_answer=False))
+
+    return QuizOut(
+        id=quiz.id, title=quiz.title,
+        chapter_id=quiz.chapter_id, course_id=quiz.course_id,
+        academic_year_id=quiz.academic_year_id,
+        material_id=quiz.material_id,
         difficulty=quiz.difficulty.value,
         question_count=quiz.question_count,
         is_mock_exam=quiz.is_mock_exam,
@@ -309,7 +429,7 @@ def submit_quiz(
 
     db.commit()
 
-    # Build recommendations
+    # Build recommendations and weak topics
     weak_topics = []
     recommendations = []
     if weak_chapter_ids:
@@ -318,14 +438,12 @@ def submit_quiz(
             ch = db.query(Chapter).filter(Chapter.id == cid).first()
             if ch:
                 weak_topics.append(ch.title)
-                recommendations.append(f"Review Chapter {ch.number}: {ch.title} and retake the quiz.")
-    if not recommendations:
-        if score >= 80:
-            recommendations.append("Excellent work! Move on to the next chapter.")
-        elif score >= 60:
-            recommendations.append("Good effort. Review incorrect answers and practice again.")
-        else:
-            recommendations.append("Review the course material thoroughly and retake the quiz.")
+                recommendations.append(f"Review Chapter {ch.number}: {ch.title}")
+
+    # Generate deep AI learning feedback
+    db.refresh(attempt)
+    ai_feedback_data = analyze_student_performance(attempt, db)
+    ai_feedback = AILearningFeedback(**ai_feedback_data)
 
     return QuizResult(
         attempt_id=attempt.id,
@@ -334,8 +452,9 @@ def submit_quiz(
         correct_answers=correct_count,
         incorrect_answers=total - correct_count,
         answers=answer_results,
-        weak_topics=weak_topics,
-        recommendations=recommendations,
+        weak_topics=weak_topics or ai_feedback.weak_topics,
+        recommendations=recommendations or ai_feedback.recommendations,
+        ai_feedback=ai_feedback,
     )
 
 

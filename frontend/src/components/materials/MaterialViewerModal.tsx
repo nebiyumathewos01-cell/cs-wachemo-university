@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, ShieldCheck, Lock, Loader2, Sparkles, BookOpen, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ interface MaterialViewerModalProps {
 }
 
 export default function MaterialViewerModal({ material, isOpen, onClose }: MaterialViewerModalProps) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -104,14 +106,28 @@ export default function MaterialViewerModal({ material, isOpen, onClose }: Mater
               </div>
             </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive shrink-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                className="h-8 bg-gradient-to-r from-[#ff6633] to-[#e65526] hover:from-[#e65526] hover:to-[#d0451a] text-white font-bold text-xs gap-1.5 shadow-sm shadow-[#ff6633]/20 shrink-0"
+                onClick={() => {
+                  onClose();
+                  navigate(`/quizzes?material=${material.id}&course=${material.course_id}&chapter=${material.chapter_id}`);
+                }}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Take AI Quiz
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive shrink-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           {/* Body Content */}

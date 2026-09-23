@@ -32,6 +32,9 @@ export const quizApi = {
   generateQuiz: (data: GenerateQuizRequest) =>
     apiClient.post<Quiz>("/ai/generate-quiz", data),
 
+  generateMaterialQuiz: (data: import("@/types").GenerateMaterialQuizRequest) =>
+    apiClient.post<Quiz>("/ai/generate-material-quiz", data),
+
   generateMockExam: (data: MockExamRequest) =>
     apiClient.post<Quiz>("/ai/generate-mock-exam", data),
 

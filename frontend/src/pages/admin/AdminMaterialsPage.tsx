@@ -50,6 +50,7 @@ export default function AdminMaterialsPage() {
   const [error, setError] = useState("");
   const [uploadOpen, setUploadOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Material | null>(null);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [downloading, setDownloading] = useState<number | null>(null);
   
@@ -297,6 +298,31 @@ export default function AdminMaterialsPage() {
     }
   };
 
+  const handleDeleteAllMaterials = async () => {
+    setSaving(true);
+    try {
+      const res = await materialsApi.deleteAllMaterials();
+      setShowDeleteAllConfirm(false);
+      setMaterials([]);
+      toast({
+        title: "All Materials Deleted",
+        description: res.data.message || "Successfully deleted all uploaded materials from storage and database.",
+      });
+      if (filterChapter !== "all") {
+        loadMaterials(Number(filterChapter));
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Delete All Failed",
+        description: err?.response?.data?.detail || "Could not delete all materials.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleDownload = async (id: number, title: string, ext: string) => {
     setDownloading(id);
     try {
@@ -332,6 +358,14 @@ export default function AdminMaterialsPage() {
             <Button onClick={openUpload} variant="outline" className="gap-2">
               <Upload className="h-4 w-4" />
               Manual Upload
+            </Button>
+            <Button
+              onClick={() => setShowDeleteAllConfirm(true)}
+              variant="destructive"
+              className="gap-2 font-bold shadow-md shadow-red-500/20"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete All Materials
             </Button>
           </div>
         } 
@@ -805,6 +839,40 @@ export default function AdminMaterialsPage() {
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={saving}>
               {saving ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete All Confirmation Dialog */}
+      <Dialog open={showDeleteAllConfirm} onOpenChange={setShowDeleteAllConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2.5 text-destructive">
+              <div className="h-9 w-9 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertCircle className="h-5 w-5 text-destructive" />
+              </div>
+              <DialogTitle className="text-lg">Delete All Materials?</DialogTitle>
+            </div>
+          </DialogHeader>
+          <div className="space-y-3 py-2 text-sm text-muted-foreground">
+            <p className="font-semibold text-foreground">
+              Are you sure you want to delete ALL uploaded materials across the entire CS Wachemo system?
+            </p>
+            <p>
+              This action will permanently delete all uploaded files (PDFs, slides, documents) from server storage and remove all material records from the database.
+            </p>
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-xs text-destructive font-medium">
+              ⚠️ Warning: This action is destructive and cannot be undone!
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowDeleteAllConfirm(false)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteAllMaterials} disabled={saving} className="gap-2 font-bold">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              {saving ? "Deleting All Materials..." : "Yes, Delete Everything"}
             </Button>
           </DialogFooter>
         </DialogContent>

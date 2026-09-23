@@ -153,6 +153,17 @@ def download_material(material_id: int, db: Session = Depends(get_db), current_u
     )
 
 
+@router.delete("/materials/delete-all-bulk")
+def delete_all_materials(db: Session = Depends(get_db), _: User = Depends(get_current_admin)):
+    materials = db.query(Material).all()
+    count = len(materials)
+    for mat in materials:
+        delete_file_if_exists(mat.filename, "materials")
+        db.delete(mat)
+    db.commit()
+    return {"message": f"Successfully deleted all {count} material(s).", "count": count}
+
+
 @router.delete("/materials/{material_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_material(material_id: int, db: Session = Depends(get_db), _: User = Depends(get_current_admin)):
     mat = db.query(Material).filter(Material.id == material_id).first()

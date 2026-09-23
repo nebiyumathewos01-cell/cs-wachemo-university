@@ -99,6 +99,9 @@ export const materialsApi = {
 
   deleteMaterial: (id: number) =>
     apiClient.delete(`/materials/${id}`),
+
+  deleteAllMaterials: () =>
+    apiClient.delete<{ message: string; count: number }>("/materials/delete-all-bulk"),
 };
 
 // ─── Past Exams ──────────────────────────────────────────────
